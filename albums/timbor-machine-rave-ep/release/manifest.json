@@ -1,0 +1,119 @@
+{
+ "album": {
+  "dna_hash": "0d59723d",
+  "generator_version": "0.3.0",
+  "master_seed": 424242,
+  "name": "TIMBOR \u2014 Machine Rave EP",
+  "source_album_project": "TIMBOR \u2014 Machine Rave EP"
+ },
+ "audio": {
+  "album_master_hash": "aef39072b6381d306c63e0563d0e2b9c",
+  "bit_depth": 32,
+  "channels": 2,
+  "sample_rate": 44100
+ },
+ "format": "timbor-release-manifest",
+ "provenance": {
+  "configuration_hash": "8fb6aaac",
+  "generator_version": "0.3.0",
+  "limiter_applied": false,
+  "loudness_mode": "preserve"
+ },
+ "sequence": {
+  "config_hash": "8fb6aaac",
+  "duration_seconds": 252.8282,
+  "mode": "gap",
+  "quantize": "none",
+  "transitions": [
+   {
+    "bpm_mismatch": false,
+    "curve": "equal_power",
+    "destination_bpm": 167.0,
+    "destination_position": 1,
+    "duration_seconds": 2.0,
+    "gap_samples": 88200,
+    "overlap_samples": 0,
+    "parameters": {},
+    "quantize": "none",
+    "source_bpm": 170.0,
+    "source_position": 0,
+    "type": "gap"
+   },
+   {
+    "bpm_mismatch": false,
+    "curve": "equal_power",
+    "destination_bpm": 142.0,
+    "destination_position": 2,
+    "duration_seconds": 2.0,
+    "gap_samples": 88200,
+    "overlap_samples": 0,
+    "parameters": {},
+    "quantize": "none",
+    "source_bpm": 167.0,
+    "source_position": 1,
+    "type": "gap"
+   },
+   {
+    "bpm_mismatch": false,
+    "curve": "equal_power",
+    "destination_bpm": 155.0,
+    "destination_position": 3,
+    "duration_seconds": 2.0,
+    "gap_samples": 88200,
+    "overlap_samples": 0,
+    "parameters": {},
+    "quantize": "none",
+    "source_bpm": 142.0,
+    "source_position": 2,
+    "type": "gap"
+   }
+  ]
+ },
+ "tracks": [
+  {
+   "album_gain_db": 0.0,
+   "bpm": 170.0,
+   "duration_seconds": 63.118,
+   "genre": "gabber",
+   "key": "D minor",
+   "order": 1,
+   "source_master_hash": "3b992f7cf9aa54ed3aa6e455e3f94f1e",
+   "source_project": "01/project.json",
+   "title": "Track 01"
+  },
+  {
+   "album_gain_db": 0.0,
+   "bpm": 167.0,
+   "duration_seconds": 52.737,
+   "genre": "jungle",
+   "key": "D minor",
+   "order": 2,
+   "source_master_hash": "ece1b8cce8f6b29a04ffa36407236c63",
+   "source_project": "02/project.json",
+   "title": "Track 02"
+  },
+  {
+   "album_gain_db": 0.0,
+   "bpm": 142.0,
+   "duration_seconds": 61.845,
+   "genre": "trance",
+   "key": "D minor",
+   "order": 3,
+   "source_master_hash": "d7f9f0384cb8008a4b06cbf9c13d8ea1",
+   "source_project": "03/project.json",
+   "title": "Track 03"
+  },
+  {
+   "album_gain_db": 0.0,
+   "bpm": 155.0,
+   "duration_seconds": 69.129,
+   "genre": "hard_house",
+   "key": "D minor",
+   "order": 4,
+   "source_master_hash": "ba6bc6b71af691eda1d3f7f0f140d0cc",
+   "source_project": "04/project.json",
+   "title": "Track 04"
+  }
+ ],
+ "version": 1
+}

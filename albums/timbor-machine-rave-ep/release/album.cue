@@ -1,0 +1,19 @@
+PERFORMER "TIMBOR"
+TITLE "TIMBOR — Machine Rave EP"
+FILE "album.wav" WAVE
+  TRACK 01 AUDIO
+    TITLE "Track 01"
+    PERFORMER "gabber / 170 BPM"
+    INDEX 01 00:00:00
+  TRACK 02 AUDIO
+    TITLE "Track 02"
+    PERFORMER "jungle / 167 BPM"
+    INDEX 01 01:05:09
+  TRACK 03 AUDIO
+    TITLE "Track 03"
+    PERFORMER "trance / 142 BPM"
+    INDEX 01 01:59:64
+  TRACK 04 AUDIO
+    TITLE "Track 04"
+    PERFORMER "hard_house / 155 BPM"
+    INDEX 01 03:03:52

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIMBOR — Album Studio</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ================================================== top bar -->
+  <header id="topbar">
+    <div class="brand">TIMBOR<span class="brand-sub">ALBUM&nbsp;STUDIO</span></div>
+    <button id="album-picker" title="Album library — switch the active album">
+      <span id="top-album-name">—</span><span class="caret">▼</span>
+    </button>
+    <div class="top-meta" id="top-album-meta"></div>
+    <div class="spacer"></div>
+    <div class="top-state" id="top-state">
+      <span class="led" id="top-led"></span><span id="top-state-text">—</span>
+    </div>
+  </header>
+
+  <div id="body">
+
+    <!-- ================================================ side nav -->
+    <nav id="sidenav">
+      <div class="nav-group">ALBUM</div>
+      <button class="nav-item" data-screen="overview"><span class="nav-num">01</span>OVERVIEW</button>
+      <button class="nav-item" data-screen="dna"><span class="nav-num">02</span>DNA</button>
+      <button class="nav-item" data-screen="tracks"><span class="nav-num">03</span>TRACKS</button>
+      <button class="nav-item" data-screen="motifs"><span class="nav-num">04</span>MOTIFS</button>
+      <button class="nav-item" data-screen="sampleLibrary"><span class="nav-num">05</span>SAMPLE LIBRARY</button>
+      <button class="nav-item" data-screen="palette"><span class="nav-num">06</span>SAMPLE PALETTE</button>
+      <button class="nav-item" data-screen="sequence"><span class="nav-num">07</span>SEQUENCE</button>
+      <button class="nav-item" data-screen="loudness"><span class="nav-num">08</span>LOUDNESS</button>
+      <button class="nav-item" data-screen="qc"><span class="nav-num">09</span>QC</button>
+      <button class="nav-item" data-screen="release"><span class="nav-num">10</span>RELEASE</button>
+      <div class="nav-foot">
+        <div class="sys-line"><span class="k">SEED</span><span class="v" id="nav-seed">—</span></div>
+        <div class="sys-line"><span class="k">ENGINE</span><span class="v" id="nav-engine">—</span></div>
+        <div class="sys-line"><span class="k">AUDIO</span><span class="v" id="nav-audio">—</span></div>
+      </div>
+    </nav>
+
+    <!-- ================================================ screen host -->
+    <main id="screen"></main>
+  </div>
+
+  <!-- ================================================ player -->
+  <div id="player">
+    <button class="pbtn" id="pl-prev" title="Previous track">|◀</button>
+    <button class="pbtn pbtn-main" id="pl-play" title="Play / Pause (Space)">▶</button>
+    <button class="pbtn" id="pl-stop" title="Stop (Enter)">■</button>
+    <button class="pbtn" id="pl-next" title="Next track">▶|</button>
+    <div class="pl-title"><span id="pl-name">—</span></div>
+    <div class="pl-time" id="pl-time">00:00 / 00:00</div>
+    <div class="pl-bar" id="pl-bar"><div class="pl-fill" id="pl-fill"></div></div>
+    <button class="pbtn small" id="pl-loop" title="Loop">↻</button>
+    <button class="pbtn small" id="pl-mute" title="Mute">🔊</button>
+    <input type="range" id="pl-vol" min="0" max="100" value="90" title="Volume">
+  </div>
+
+  <!-- ================================================ technical console -->
+  <div id="console" class="collapsed">
+    <div id="console-head">
+      <span class="chev" id="console-chev">▸</span>
+      TIMBOR SYSTEM LOG
+      <span class="console-stats" id="console-stats"></span>
+      <span class="spacer"></span>
+      <button class="cbtn" id="console-clear" title="Clear log">CLEAR</button>
+    </div>
+    <div id="console-body"></div>
+  </div>
+
+  <!-- ================================================ status bar -->
+  <footer id="statusbar">
+    <span id="sb-album">—</span><span class="sb-sep">│</span>
+    <span id="sb-seed">—</span><span class="sb-sep">│</span>
+    <span id="sb-engine">—</span><span class="sb-sep">│</span>
+    <span id="sb-tracks">—</span><span class="sb-sep">│</span>
+    <span id="sb-format">—</span><span class="sb-sep">│</span>
+    <span id="sb-state"><span class="led"></span>—</span>
+    <span class="spacer"></span>
+    <span id="sb-hint">SPACE play · ENTER stop · ←→ seek · 1–9 track · R render · V verify · Q qc · ` console</span>
+  </footer>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

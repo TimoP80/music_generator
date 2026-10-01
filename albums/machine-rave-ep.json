@@ -1,0 +1,18 @@
+{
+ "name": "TIMBOR — Machine Rave EP",
+ "seed": 424242,
+ "tracks": 4,
+ "genres": ["gabber", "jungle", "trance", "hard_house"],
+ "bpm_center": 170,
+ "bpm_range": 12,
+ "key": "D",
+ "mode": "minor",
+ "mood": "dark",
+ "duration_range": [45, 75],
+ "motif_strategy": "family",
+ "divergence": "medium",
+ "shared_palette": true,
+ "palette_mode": "balanced",
+ "sample_dir": "data/demo_library",
+ "sample_mode": "balanced"
+}

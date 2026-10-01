@@ -1,0 +1,119 @@
+{
+ "boundary_diagnostics": [
+  {
+   "boundary_sample": 2871688,
+   "boundary_seconds": 65.1176,
+   "context_discontinuity": 0.13724,
+   "discontinuity": 0.151522,
+   "from": "01",
+   "mode": "gap",
+   "peak_around": -7.1,
+   "rms_post_dbfs": -19.04,
+   "rms_pre_dbfs": -240.0,
+   "status": "PASS",
+   "to": "02"
+  },
+  {
+   "boundary_sample": 5285568,
+   "boundary_seconds": 119.8541,
+   "context_discontinuity": 0.2618,
+   "discontinuity": 0.198823,
+   "from": "02",
+   "mode": "gap",
+   "peak_around": -7.92,
+   "rms_post_dbfs": -21.02,
+   "rms_pre_dbfs": -240.0,
+   "status": "PASS",
+   "to": "03"
+  },
+  {
+   "boundary_sample": 8101135,
+   "boundary_seconds": 183.6992,
+   "context_discontinuity": 0.251959,
+   "discontinuity": 0.133079,
+   "from": "03",
+   "mode": "gap",
+   "peak_around": -7.91,
+   "rms_post_dbfs": -20.58,
+   "rms_pre_dbfs": -240.0,
+   "status": "PASS",
+   "to": "04"
+  }
+ ],
+ "checks": [
+  {
+   "check": "sequence_structure",
+   "detail": "",
+   "ok": true
+  },
+  {
+   "check": "sample_rate",
+   "detail": "44100",
+   "ok": true
+  },
+  {
+   "check": "channels",
+   "detail": "2",
+   "ok": true
+  },
+  {
+   "check": "finite_samples",
+   "detail": "no NaN/Inf",
+   "ok": true
+  },
+  {
+   "check": "no_clipping",
+   "detail": "0 samples at or above 0 dBFS; peak -3.31 dBFS",
+   "ok": true
+  },
+  {
+   "check": "expected_duration",
+   "detail": "11149725 samples vs planned 11149725",
+   "ok": true
+  },
+  {
+   "check": "boundary_01_02",
+   "detail": "PASS disc=0.1515 mode=gap",
+   "ok": true
+  },
+  {
+   "check": "boundary_02_03",
+   "detail": "PASS disc=0.1988 mode=gap",
+   "ok": true
+  },
+  {
+   "check": "boundary_03_04",
+   "detail": "PASS disc=0.1331 mode=gap",
+   "ok": true
+  },
+  {
+   "check": "loudness_policy_recorded",
+   "detail": "mode=preserve limiter=False",
+   "ok": true
+  },
+  {
+   "check": "master_unchanged_01",
+   "detail": "3b992f7cf9aa54ed3aa6e455e3f94f1e",
+   "ok": true
+  },
+  {
+   "check": "master_unchanged_02",
+   "detail": "ece1b8cce8f6b29a04ffa36407236c63",
+   "ok": true
+  },
+  {
+   "check": "master_unchanged_03",
+   "detail": "d7f9f0384cb8008a4b06cbf9c13d8ea1",
+   "ok": true
+  },
+  {
+   "check": "master_unchanged_04",
+   "detail": "ba6bc6b71af691eda1d3f7f0f140d0cc",
+   "ok": true
+  }
+ ],
+ "errors": 0,
+ "format": "timbor-album-qc",
+ "ok": true,
+ "version": 1
+}

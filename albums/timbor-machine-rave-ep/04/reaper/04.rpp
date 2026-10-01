@@ -1,0 +1,446 @@
+<REAPER_PROJECT 0.1 "TIMBOR export" 1
+  SAMPLERATE 44100 0 0
+  TEMPO 155.0 4 4
+  LENGTH 68.129032
+  MARKER 1 0.000000 INTRO 0 R 0
+  MARKER 2 6.193548 GROOVE 0 R 0
+  MARKER 3 12.387097 THEME 0 R 0
+  MARKER 4 18.580645 DEV 0 R 0
+  MARKER 5 24.774194 BREAK 0 R 0
+  MARKER 6 30.967742 BUILD 0 R 0
+  MARKER 7 37.161290 DROP 0 R 0
+  MARKER 8 43.354839 VARIATION 0 R 0
+  MARKER 9 49.548387 BREAK2 0 R 0
+  MARKER 10 55.741935 BUILD2 0 R 0
+  MARKER 11 61.935484 DROP2 0 R 0
+  <TRACK
+    NAME Master
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME master
+      SOURCE FILE "../audio/master.wav"
+    >
+  >
+  <TRACK
+    NAME Drums
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME drums
+      SOURCE FILE "../audio/drums.wav"
+    >
+  >
+  <TRACK
+    NAME Bass
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME bass
+      SOURCE FILE "../audio/bass.wav"
+    >
+  >
+  <TRACK
+    NAME Melody
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME mel
+      SOURCE FILE "../audio/mel.wav"
+    >
+  >
+  <TRACK
+    NAME FX
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME fx
+      SOURCE FILE "../audio/fx.wav"
+    >
+  >
+  <TRACK
+    NAME Samples
+    <ITEM
+      POSITION 0
+      LENGTH 68.129032
+      NAME samples
+      SOURCE FILE "../audio/samples.wav"
+    >
+  >
+  <TRACK
+    NAME TIMBOR Sample Events
+    <ITEM
+      POSITION 6.193548
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 6.193548
+      LENGTH 3.750000
+      NAME chord_loop_Fmin_128bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=stab_hit; reverse=0"
+      SOURCE FILE "data\demo_library\tonal\chord_loop_Fmin_128bpm.wav"
+    >
+    <ITEM
+      POSITION 7.741935
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 9.290323
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 10.838710
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 12.387097
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 12.387097
+      LENGTH 3.750000
+      NAME chord_loop_Fmin_128bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      PITCH -0.250000
+      NOTES "role=stab_hit; reverse=0"
+      SOURCE FILE "data\demo_library\tonal\chord_loop_Fmin_128bpm.wav"
+    >
+    <ITEM
+      POSITION 13.935484
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 15.483871
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 17.032258
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 18.580645
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 20.129032
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 21.677419
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 23.225806
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 30.967742
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 30.967742
+      LENGTH 2.000013
+      NAME riser_01.wav
+      SOFFS 0
+      PLAYRATE 1.548400 1 0 -1 1
+      NOTES "role=riser; reverse=0"
+      SOURCE FILE "data\demo_library\fx\riser_01.wav"
+    >
+    <ITEM
+      POSITION 32.516129
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 34.064516
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 35.612903
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 37.161290
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 37.161290
+      LENGTH 3.750000
+      NAME chord_loop_Fmin_128bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      PITCH -0.250000
+      NOTES "role=stab_hit; reverse=0"
+      SOURCE FILE "data\demo_library\tonal\chord_loop_Fmin_128bpm.wav"
+    >
+    <ITEM
+      POSITION 37.161290
+      LENGTH 1.200000
+      NAME vox_shout_01.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=impact; reverse=0"
+      SOURCE FILE "data\demo_library\fx\vox_shout_01.wav"
+    >
+    <ITEM
+      POSITION 38.709677
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 40.258065
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 41.806452
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 43.354839
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 43.354839
+      LENGTH 3.750000
+      NAME chord_loop_Fmin_128bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      PITCH -0.250000
+      NOTES "role=stab_hit; reverse=0"
+      SOURCE FILE "data\demo_library\tonal\chord_loop_Fmin_128bpm.wav"
+    >
+    <ITEM
+      POSITION 44.903226
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 46.451613
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 48.000000
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 55.741935
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 55.741935
+      LENGTH 2.000013
+      NAME riser_01.wav
+      SOFFS 0
+      PLAYRATE 1.548400 1 0 -1 1
+      NOTES "role=riser; reverse=0"
+      SOURCE FILE "data\demo_library\fx\riser_01.wav"
+    >
+    <ITEM
+      POSITION 57.290323
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 58.838710
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 60.387097
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 61.935484
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 61.935484
+      LENGTH 3.750000
+      NAME chord_loop_Fmin_128bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      PITCH -0.250000
+      NOTES "role=stab_hit; reverse=0"
+      SOURCE FILE "data\demo_library\tonal\chord_loop_Fmin_128bpm.wav"
+    >
+    <ITEM
+      POSITION 61.935484
+      LENGTH 1.200000
+      NAME vox_shout_01.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=impact; reverse=0"
+      SOURCE FILE "data\demo_library\fx\vox_shout_01.wav"
+    >
+    <ITEM
+      POSITION 63.483871
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=1; chop_ops present (see project.json; chop is baked into the samples stem); REVERSE not representable in RPP item; use stem audio"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 65.032258
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+    <ITEM
+      POSITION 66.580645
+      LENGTH 1.548387
+      NAME amen_break_00_174bpm.wav
+      SOFFS 0
+      PLAYRATE 1.000000 1 0 -1 1
+      NOTES "role=main_break; reverse=0; chop_ops present (see project.json; chop is baked into the samples stem)"
+      SOURCE FILE "data\demo_library\breaks\amen_break_00_174bpm.wav"
+    >
+  >
+>

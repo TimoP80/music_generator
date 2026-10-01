@@ -1,0 +1,32 @@
+{
+ "gabber": {
+  "master": "4a86cc807e95352385bf0f75b95f5903",
+  "stems": {
+   "drums": "97abefe64ad53dc1d8772f5c3d88d673",
+   "bass": "f66ad9c42dec8986e48d3ebd9671c723",
+   "mel": "771630dbd1a494212c9bd6daab3fc5b1",
+   "fx": "834050d4647449174cbcc0ceea79595c",
+   "samples": "83d049cb6e4ae852d71739f2c3089a10"
+  },
+  "note": "final phase code, seed 424242; stems byte-identical across two runs; --verify-render: drums/bass/fx/samples IDENTICAL, mel/master approx tier"
+ },
+ "jungle": {
+  "master": "a74d0dbee965e2f1f99a13988dfe7c00",
+  "stems": {
+   "drums": "98634f05a386f1d035b34338562e69fd",
+   "bass": "1095246aee4346af80d518d63a29f687",
+   "mel": "db28a08a5ee5e0187d1e8dda34e25906",
+   "fx": "4e6df853f3e34ff6681b7ed535955988",
+   "samples": "f2c2a7a10b14f39c1b89c36c0ced265d"
+  },
+  "note": "final phase code, seed 424242; --verify-render: drums/fx/samples IDENTICAL, bass/mel/master approx tier"
+ },
+ "trance": {
+  "master": "db7f1278f33d0a10576f35f9f5d1709d",
+  "note": "final phase code, seed 424242"
+ },
+ "hard_house": {
+  "master": "35cc8969182bd7338e09f8cb7e85fba6",
+  "note": "final phase code, seed 424242"
+ }
+}

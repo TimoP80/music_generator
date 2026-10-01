@@ -1,0 +1,41 @@
+{
+ "album": "TIMBOR \u2014 Machine Rave EP",
+ "tracks": [
+  {
+   "bpm": 170.0,
+   "duration_seconds": 63.118,
+   "gap_before": 0.0,
+   "genre": "gabber",
+   "position": 1,
+   "start_seconds": 0.0,
+   "title": "Track 01"
+  },
+  {
+   "bpm": 167.0,
+   "duration_seconds": 52.737,
+   "gap_before": 2.0,
+   "genre": "jungle",
+   "position": 2,
+   "start_seconds": 65.1176,
+   "title": "Track 02"
+  },
+  {
+   "bpm": 142.0,
+   "duration_seconds": 61.845,
+   "gap_before": 2.0,
+   "genre": "trance",
+   "position": 3,
+   "start_seconds": 119.8541,
+   "title": "Track 03"
+  },
+  {
+   "bpm": 155.0,
+   "duration_seconds": 69.129,
+   "gap_before": 2.0,
+   "genre": "hard_house",
+   "position": 4,
+   "start_seconds": 183.6992,
+   "title": "Track 04"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+# Python runtime artifacts
+__pycache__/
+*.py[cod]
+
+# Local indexes and temporary files
+*.db
+*.db-shm
+*.db-wal
+*.tmp
+
+# Audio assets and generated renders (large binary files)
+*.wav
+*.wave
+*.aif
+*.aiff
+*.flac
+*.mp3
+
+# Local runtime state
+*.log
+.freebuff/

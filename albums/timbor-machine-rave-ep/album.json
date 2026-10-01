@@ -1,0 +1,343 @@
+{
+ "format": "timbor-album",
+ "version": 1,
+ "name": "TIMBOR \u2014 Machine Rave EP",
+ "generator": {
+  "name": "TIMBOR",
+  "version": "0.3.0",
+  "python": "3.14.6",
+  "os": "Windows-11-10.0.26200-SP0",
+  "sample_rate": 44100,
+  "seed": 424242,
+  "generated_at": "2026-10-01T05:44:58"
+ },
+ "config": {
+  "name": "TIMBOR \u2014 Machine Rave EP",
+  "seed": 424242,
+  "tracks": 4,
+  "genres": [
+   "gabber",
+   "jungle",
+   "trance",
+   "hard_house"
+  ],
+  "prompts": [],
+  "titles": [],
+  "bpm_center": 170,
+  "bpm_range": 12,
+  "key": "D",
+  "mode": "minor",
+  "mood": "dark",
+  "authenticity": "hybrid",
+  "era": null,
+  "duration_range": [
+   45,
+   75
+  ],
+  "motif_strategy": "family",
+  "divergence": "medium",
+  "shared_palette": true,
+  "palette_mode": "balanced",
+  "sample_dir": "data/demo_library",
+  "sample_mode": "balanced",
+  "sample_root": null,
+  "track_overrides": {}
+ },
+ "dna": {
+  "root_key": "D",
+  "mode": "minor",
+  "bpm_center": 170.0,
+  "bpm_range": 12.0,
+  "harmonic_family": "dark_phryg",
+  "motif_family": [
+   0,
+   2,
+   null,
+   4,
+   5,
+   7,
+   9,
+   10
+  ],
+  "motif_contour": "dawn",
+  "rhythm_fingerprint": [
+   1,
+   1,
+   1,
+   1,
+   0,
+   0,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "signature_instruments": {
+   "bass": "rumble",
+   "lead": "hoover",
+   "kick": "gabber",
+   "drums": "hardcore"
+  },
+  "era": "1990-1995",
+  "mood": "dark",
+  "authenticity": "hybrid",
+  "palette_mode": "balanced",
+  "genre_anchor": "gabber",
+  "seed": 424242
+ },
+ "dna_hash": "0d59723d",
+ "tracks": [
+  {
+   "number": "01",
+   "title": "Track 01",
+   "directory": "01",
+   "project": "01/project.json",
+   "genre": "gabber",
+   "seed": 307915412,
+   "bpm": 170.0,
+   "key": "D minor",
+   "bars": 44,
+   "lineage": {
+    "transformations": [
+     "base_statement"
+    ],
+    "family": "main",
+    "parent": "A",
+    "variant": "A",
+    "motif": [
+     0,
+     2,
+     null,
+     4,
+     5,
+     7,
+     9,
+     10
+    ],
+    "identity_score": 1.0,
+    "fingerprint": "4f3a6988"
+   },
+   "exports": {
+    "midi": "01/midi/01.mid",
+    "manifest": "01/export/01_export.json",
+    "reaper": "01/reaper/01.rpp",
+    "ableton": "01/ableton"
+   },
+   "duration_seconds": 62.12,
+   "samples_used": 5
+  },
+  {
+   "number": "02",
+   "title": "Track 02",
+   "directory": "02",
+   "project": "02/project.json",
+   "genre": "jungle",
+   "seed": 2143255696,
+   "bpm": 167.0,
+   "key": "D minor",
+   "bars": 36,
+   "lineage": {
+    "transformations": [
+     "note_omission",
+     "genre_rhythm(jungle)"
+    ],
+    "family": "main",
+    "parent": "A",
+    "variant": "A'_1",
+    "motif": [
+     0,
+     2,
+     null,
+     null,
+     5,
+     null,
+     9,
+     null
+    ],
+    "identity_score": 0.4208,
+    "fingerprint": "33e79a5c"
+   },
+   "exports": {
+    "midi": "02/midi/02.mid",
+    "manifest": "02/export/02_export.json",
+    "reaper": "02/reaper/02.rpp",
+    "ableton": "02/ableton"
+   },
+   "duration_seconds": 51.74,
+   "samples_used": 4
+  },
+  {
+   "number": "03",
+   "title": "Track 03",
+   "directory": "03",
+   "project": "03/project.json",
+   "genre": "trance",
+   "seed": 83024178,
+   "bpm": 142.0,
+   "key": "D minor",
+   "bars": 36,
+   "lineage": {
+    "transformations": [
+     "rhythmic_augment",
+     "genre_rhythm(trance)"
+    ],
+    "family": "main",
+    "parent": "A",
+    "variant": "A'_2",
+    "motif": [
+     0,
+     0,
+     2,
+     2,
+     null,
+     4,
+     5,
+     5
+    ],
+    "identity_score": 0.4583,
+    "fingerprint": "7155bfe1"
+   },
+   "exports": {
+    "midi": "03/midi/03.mid",
+    "manifest": "03/export/03_export.json",
+    "reaper": "03/reaper/03.rpp",
+    "ableton": "03/ableton"
+   },
+   "duration_seconds": 60.85,
+   "samples_used": 4
+  },
+  {
+   "number": "04",
+   "title": "Track 04",
+   "directory": "04",
+   "project": "04/project.json",
+   "genre": "hard_house",
+   "seed": 167253098,
+   "bpm": 155.0,
+   "key": "D minor",
+   "bars": 44,
+   "lineage": {
+    "transformations": [
+     "transpose(+1)",
+     "arpeggiation",
+     "call_response",
+     "genre_rhythm(hard_house)"
+    ],
+    "family": "main",
+    "parent": "A",
+    "variant": "A'_3",
+    "motif": [
+     1,
+     3,
+     null,
+     4,
+     5,
+     6,
+     7,
+     8
+    ],
+    "identity_score": 0.65,
+    "fingerprint": "c0be14c6"
+   },
+   "exports": {
+    "midi": "04/midi/04.mid",
+    "manifest": "04/export/04_export.json",
+    "reaper": "04/reaper/04.rpp",
+    "ableton": "04/ableton"
+   },
+   "duration_seconds": 68.13,
+   "samples_used": 4
+  }
+ ],
+ "palette": {
+  "mode": "balanced",
+  "genres": [
+   "gabber",
+   "hard_house",
+   "jungle",
+   "trance"
+  ],
+  "roles": {
+   "impact": {
+    "id": "smp818f",
+    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\fx\\vox_shout_01.wav",
+    "filename": "vox_shout_01.wav",
+    "category": "fx",
+    "bpm": 150.32,
+    "key": null,
+    "duration": 1.2,
+    "selection_score": 2.75,
+    "scored_for_genre": "gabber",
+    "roles": [
+     "impact"
+    ]
+   },
+   "melodic_loop": {
+    "id": "smp33d2",
+    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
+    "filename": "chord_loop_Amin_128bpm.wav",
+    "category": "chord",
+    "bpm": 128.0,
+    "key": "A:min",
+    "duration": 3.75,
+    "selection_score": 3.11,
+    "scored_for_genre": "trance",
+    "roles": [
+     "melodic_loop"
+    ]
+   },
+   "main_break": {
+    "id": "smp4ac7",
+    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
+    "filename": "amen_break_00_174bpm.wav",
+    "category": "breakbeat",
+    "bpm": 174.12,
+    "key": null,
+    "duration": 2.759,
+    "selection_score": 6.64,
+    "scored_for_genre": "jungle",
+    "roles": [
+     "main_break"
+    ]
+   }
+  }
+ },
+ "validation": [
+  {
+   "code": "bpm_outside_neighborhood",
+   "severity": "warning",
+   "message": "bpm 142 outside [158, 182] (snapped to trance genre range)",
+   "track": 2
+  },
+  {
+   "code": "bpm_outside_neighborhood",
+   "severity": "warning",
+   "message": "bpm 155 outside [158, 182] (snapped to hard_house genre range)",
+   "track": 3
+  },
+  {
+   "code": "palette_weak_propagation",
+   "severity": "warning",
+   "message": "palette chord_loop_Amin_128bpm.wav reaches 2/4 tracks (< majority)"
+  }
+ ],
+ "sequencing": {
+  "enabled": true,
+  "transition_mode": "gap",
+  "gap_seconds": 2.0,
+  "fade_in_seconds": 0.0,
+  "fade_out_seconds": 0.0,
+  "crossfade_seconds": 4.0,
+  "preserve_track_boundaries": true
+ },
+ "transition": {
+  "quantize": "none",
+  "curve": "equal_power"
+ }
+}
