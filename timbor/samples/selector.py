@@ -133,9 +133,11 @@ def score_sample(m: SampleMetadata, song, role: str, section_energy: float,
         ratios = []
         for r in (1.0, 0.5, 2.0):
             if r * bpm > 0:
-                ratios.append(abs(np.log2(bpm * r / song.bpm)))
+                # use ERB-scale distance for more natural BPM matching
+                errb = 24.7 * (1.0 + 0.00437 * bpm)
+                ratios.append(abs(np.log10(bpm * r / song.bpm) * errb / 1000.0))
         dist = min(ratios)
-        bscore = _clamp01(1.0 - dist * 2.2)
+        bscore = _clamp01(1.0 - dist)
     why["bpm"] = round(bscore, 2)
 
     # 4) key match: only meaningful for tonal material (spec: respect confidence)
@@ -156,7 +158,7 @@ def score_sample(m: SampleMetadata, song, role: str, section_energy: float,
     # 5) energy match
     target = (pack_pref["energy"][0] + (pack_pref["energy"][1] - pack_pref["energy"][0])
               * section_energy)
-    escore = _clamp01(1.0 - abs(m.energy - target) * 1.5)
+    escore = _clamp01(1.0 - abs(np.log10(max(m.energy, 1e-6) / max(target, 1e-6))) * 0.5)
     why["energy"] = round(escore, 2)
 
     # 6) spectral match: bright material for euphoric moods, dark for dark
@@ -171,7 +173,7 @@ def score_sample(m: SampleMetadata, song, role: str, section_energy: float,
     why["duration"] = round(dscore, 2)
 
     # 8) section energy fit: loops in low-energy sections want lower energy
-    fit = 1.0 - abs(m.energy - section_energy) * 0.8
+    fit = 1.0 - abs(np.log10(max(m.energy, 1e-6) / max(section_energy, 1e-6))) * 0.5
     why["section_fit"] = round(_clamp01(fit), 2)
 
     # 9) classification quality

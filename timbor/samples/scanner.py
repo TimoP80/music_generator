@@ -5,7 +5,10 @@ Never decodes audio at scan time; only stats files and reads cheap headers.
 from __future__ import annotations
 
 import os
+import stat
+import threading
 from dataclasses import dataclass
+from typing import Callable
 
 EXT_FORMATS = {
     ".wav": "wav", ".wave": "wav",
@@ -23,28 +26,70 @@ class ScannedFile:
     format: str
 
 
-def scan_directory(root: str, follow_symlinks: bool = False) -> list[ScannedFile]:
-    """Recursively find supported audio files. No audio decoding here."""
+class ScanCancelled(Exception):
+    """Raised when a caller requests cooperative cancellation of discovery."""
+
+
+def scan_directory(root: str, follow_symlinks: bool = False,
+                   progress_callback: Callable[[int, str], None] | None = None,
+                   cancel_event: threading.Event | None = None
+                   ) -> list[ScannedFile]:
+    """Recursively find supported audio files without decoding them.
+
+    The optional callback receives (files_found, current_path) as directories
+    and supported files are visited. Discovery has no known total, so callers
+    should present this as indeterminate progress until the scan returns.
+    """
+    def check_cancelled() -> None:
+        if cancel_event and cancel_event.is_set():
+            raise ScanCancelled("sample scan cancelled")
+
     out: list[ScannedFile] = []
     root = os.path.abspath(root)
-    for dirpath, dirnames, filenames in os.walk(root, followlinks=follow_symlinks):
-        dirnames.sort()
-        if not follow_symlinks:
-            is_junction = getattr(os.path, "isjunction", lambda _path: False)
-            dirnames[:] = [name for name in dirnames
-                           if not os.path.islink(os.path.join(dirpath, name))
-                           and not is_junction(os.path.join(dirpath, name))]
-        for fn in sorted(filenames):
-            ext = os.path.splitext(fn)[1].lower()
-            fmt = EXT_FORMATS.get(ext)
-            if not fmt:
-                continue
-            p = os.path.join(dirpath, fn)
+    pending_dirs = [root]
+    is_junction = getattr(os.path, "isjunction", lambda _path: False)
+    while pending_dirs:
+        check_cancelled()
+        dirpath = pending_dirs.pop()
+        if progress_callback:
+            progress_callback(len(out), dirpath)
+        check_cancelled()
+
+        child_dirs = []
+        audio_files = []
+        try:
+            with os.scandir(dirpath) as entries:
+                for entry in entries:
+                    check_cancelled()
+                    try:
+                        mode = entry.stat(follow_symlinks=follow_symlinks).st_mode
+                        is_directory = stat.S_ISDIR(mode)
+                        is_link = stat.S_ISLNK(entry.stat(follow_symlinks=False).st_mode)
+                        if is_directory:
+                            if follow_symlinks or (not is_link and not is_junction(entry.path)):
+                                child_dirs.append(entry.path)
+                            continue
+                    except OSError:
+                        continue
+                    fmt = EXT_FORMATS.get(os.path.splitext(entry.name)[1].lower())
+                    if fmt:
+                        audio_files.append((entry.name, entry.path, fmt))
+        except OSError:
+            continue
+
+        for _name, path, fmt in sorted(audio_files):
+            check_cancelled()
             try:
-                st = os.stat(p)
+                st = os.stat(path)
             except OSError:
                 continue
-            out.append(ScannedFile(p, st.st_size, st.st_mtime, fmt))
+            check_cancelled()
+            out.append(ScannedFile(path, st.st_size, st.st_mtime, fmt))
+            if progress_callback:
+                progress_callback(len(out), path)
+            check_cancelled()
+
+        pending_dirs.extend(reversed(sorted(child_dirs)))
     return out
 
 

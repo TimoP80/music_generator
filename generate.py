@@ -15,6 +15,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 
@@ -248,11 +249,38 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("-m", "--mood", choices=["dark", "euphoric", "fun", "cinematic"])
     ap.add_argument("-a", "--authenticity", default="hybrid",
                     choices=["authentic", "modern", "hybrid", "experimental"])
+    ap.add_argument("--era", help="explicit musical era for remote music-model prompt context")
     ap.add_argument("-s", "--seed", type=int, default=None)
     ap.add_argument("-o", "--out", default=None, help="output wav path")
     ap.add_argument("--bars", type=int, default=None, help="cap total bars")
     ap.add_argument("--plan-only", action="store_true", help="print plan, no render")
     ap.add_argument("--list-genres", action="store_true")
+    # opt-in remote Stable Audio 3 provider (independent of the procedural engine)
+    ap.add_argument("--stable-audio", action="store_true",
+                    help="generate WAV through the configured Stable Audio 3 Modal service")
+    ap.add_argument("--stable-audio-mode", default="text-to-audio",
+                    choices=["text-to-audio", "audio-to-audio", "inpaint"],
+                    help="official Stable Audio inference mode")
+    # additional opt-in music engines
+    ap.add_argument("--engine", choices=["timbor", "yue2", "acestep"],
+                    default="timbor",
+                    help="music engine to use (default: timbor)")
+    ap.add_argument("--stable-audio-model", default=None,
+                    help="small-music only; must match the deployed Modal model")
+    ap.add_argument("--lyrics", default=None,
+                    help="lyrics for Stable Audio, YuE2, or ACE-Step")
+    ap.add_argument("--duration", type=float, default=None,
+                    help="remote model output duration in seconds")
+    ap.add_argument("--audio-input", default=None,
+                    help="WAV input for audio-to-audio, inpaint, or continuation")
+    ap.add_argument("--audio-sample-id", default=None,
+                    help="registered TIMBOR sample-library ID to condition on")
+    ap.add_argument("--audio-strength", type=float, default=None,
+                    help="audio-to-audio noise level in [0, 1]")
+    ap.add_argument("--inpaint-start", type=float, action="append", default=None,
+                    help="inpaint/continuation mask start (repeat for multiple regions)")
+    ap.add_argument("--inpaint-end", type=float, action="append", default=None,
+                    help="inpaint/continuation mask end (repeat for multiple regions)")
     # sample subsystem
     ap.add_argument("--index-samples", metavar="DIR",
                     help="scan + analyze a sample library, then exit")
@@ -388,9 +416,130 @@ def main(argv: list[str] | None = None) -> int:
             args.album_loudness or args.package_album:
         return _album_release_ops(args)
 
-    if not args.prompt and not (args.genre or args.bpm):
-        ap.print_help()
-        return 1
+    if args.stable_audio and args.engine != "timbor":
+        ap.error("--stable-audio cannot be combined with --engine")
+
+    if args.stable_audio or args.engine in {"yue2", "acestep"}:
+        import os
+        provider_name = "Stable Audio 3" if args.stable_audio else ("YuE2" if args.engine == "yue2" else "ACE-Step")
+
+        try:
+            if args.stable_audio:
+                from timbor.stable_audio import (GenerationRequest, StableAudioConfig,
+                                                 StableAudioError, get_provider)
+                config = StableAudioConfig.from_env()
+                request_type = GenerationRequest
+                provider = get_provider(config)
+                error_type = StableAudioError
+            elif args.engine == "yue2":
+                from timbor.yue_engine import (EngineConfig, GenerationRequest,
+                                               YueEngineError, YueEngineProvider)
+                config = EngineConfig.from_env()
+                request_type = GenerationRequest
+                provider = YueEngineProvider(config)
+                error_type = YueEngineError
+            else:
+                from timbor.ace_step_engine import (EngineConfig, GenerationRequest,
+                                                    AceStepEngineError, AceStepEngineProvider)
+                config = EngineConfig.from_env()
+                request_type = GenerationRequest
+                provider = AceStepEngineProvider(config)
+                error_type = AceStepEngineError
+            if not args.prompt and not args.genre:
+                raise error_type("provide a prompt or --genre")
+            duration = args.duration if args.duration is not None else config.default_duration
+            if args.stable_audio and (args.inpaint_start is None) != (args.inpaint_end is None):
+                raise StableAudioError("--inpaint-start and --inpaint-end must be supplied together")
+            if args.stable_audio and args.inpaint_start and len(args.inpaint_start) != len(args.inpaint_end):
+                raise error_type("supply the same number of --inpaint-start and --inpaint-end values")
+            if args.stable_audio and args.stable_audio_mode == "inpaint" and not args.inpaint_start:
+                raise error_type("inpaint mode requires --inpaint-start and --inpaint-end")
+            if args.stable_audio and args.stable_audio_mode == "audio-to-audio" and args.inpaint_start:
+                raise error_type("inpaint ranges require --stable-audio-mode inpaint")
+            if not args.stable_audio and (args.audio_input or args.audio_sample_id):
+                raise error_type("conditioning audio is not exposed by these text-to-music services")
+            if not args.stable_audio and args.stable_audio_mode != "text-to-audio":
+                raise error_type("--stable-audio-mode requires --stable-audio")
+            if not args.stable_audio and (args.inpaint_start or args.inpaint_end or args.audio_strength is not None):
+                raise error_type("audio conditioning controls require --stable-audio")
+            if not args.stable_audio and args.stable_audio_model:
+                raise error_type("--stable-audio-model requires --stable-audio")
+            request_prompt = args.prompt or args.genre or ""
+            if args.engine == "acestep" and len(request_prompt) > 512:
+                raise error_type("ACE-Step caption must be at most 512 characters")
+            request = request_type(
+                prompt=request_prompt, duration=duration,
+                seed=args.seed if args.seed is not None else -1,
+                model=args.stable_audio_model if args.stable_audio else None,
+                negative_prompt=None, genre=args.genre, era=args.era,
+                bpm=args.bpm, key=args.key, mood=args.mood,
+                mode=args.stable_audio_mode if args.stable_audio else "text-to-audio",
+                audio_path=args.audio_input if args.stable_audio else None,
+                sample_id=args.audio_sample_id if args.stable_audio else None,
+                strength=args.audio_strength if args.stable_audio else None,
+                inpaint_starts=args.inpaint_start if args.stable_audio else None,
+                inpaint_ends=args.inpaint_end if args.stable_audio else None,
+                lyrics=args.lyrics)
+            if args.engine == "acestep":
+                request.validate(config)
+            audio, metadata = provider.generate(request)
+            out = args.out or ("stable_audio.wav" if args.stable_audio else f"{args.engine}.wav")
+
+            out_abs = os.path.abspath(out)
+            os.makedirs(os.path.dirname(out_abs) or ".", exist_ok=True)
+            temp_path = out_abs + ".partial"
+            try:
+                with open(temp_path, "wb") as f:
+                    f.write(audio)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp_path, out_abs)
+            finally:
+                try:
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                except OSError:
+                    pass
+            metadata_path = out_abs + ".json"
+            metadata_temp = metadata_path + ".partial"
+            try:
+                with open(metadata_temp, "w", encoding="utf-8") as f:
+                    json.dump(metadata, f, indent=2, sort_keys=True)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(metadata_temp, metadata_path)
+            finally:
+                try:
+                    if os.path.exists(metadata_temp):
+                        os.remove(metadata_temp)
+                except OSError:
+                    pass
+            print(f"== TIMBOR {provider_name} ==")
+            print(f"model={metadata['model']} seed={metadata['seed']} "
+                  f"duration={metadata['duration']:.2f}s "
+                  f"sample_rate={metadata['sample_rate']} Hz")
+            print(f"validation=PASS RMS={metadata['diagnostics']['rms']:.5f} "
+                  f"peak={metadata['diagnostics']['peak']:.5f} "
+                  f"silent={metadata['diagnostics']['silent_fraction']:.1%}")
+            print(f"generation={metadata.get('generation_seconds') or 'n/a'}s "
+                  f"total={metadata['total_seconds']:.3f}s "
+                  f"size={metadata['audio_bytes']} bytes")
+            print(f"wrote {out_abs}")
+            print(f"wrote {metadata_path}")
+            return 0
+        except error_type as exc:
+            print(f"{provider_name} failed: {exc}", file=sys.stderr)
+            return 2
+        except OSError as exc:
+            print(f"{provider_name} output error: {exc}", file=sys.stderr)
+            return 2
+
+    if args.audio_input or args.audio_sample_id or args.stable_audio_mode != "text-to-audio":
+        ap.error("audio input and Stable Audio mode controls require --stable-audio")
+    if args.duration is not None or args.lyrics:
+        ap.error("--duration and --lyrics require --stable-audio or --engine yue2/acestep")
+    if args.engine != "timbor":
+        ap.error("--engine must be timbor, yue2, or acestep")
 
     if not args.prompt and not (args.genre or args.bpm):
         ap.print_help()
@@ -403,12 +552,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.sample_dir:
         plan.sample_dir = args.sample_dir
 
+    # The local procedural engine remains the default generation path.
     sample_index = None
     if args.sample_dir and args.sample_mode != "off":
         from timbor.samples.cache import SampleIndex
         sample_index = SampleIndex()
 
-    song, buses, qc = render_track(plan, sample_index=sample_index)
+    try:
+        song, buses, qc = render_track(plan, sample_index=sample_index)
+    finally:
+        if sample_index is not None:
+            sample_index.close()
     dt = time.time() - t0
 
     print("== TIMBOR song plan ==")

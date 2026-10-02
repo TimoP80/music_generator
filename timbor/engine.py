@@ -1001,11 +1001,16 @@ def finalize_mix(bus_arrays: dict, sample_bus, *, bass_inst: str, genre: str,
             b = b * (targets[name] * d_rms / rms)
         b = np.tanh(b * 1.1)  # gentle peak control that keeps density
         leveled[name] = b
-    if smp is not None and float(np.max(np.abs(smp))) > 1e-6:
-        rms = float(np.sqrt(np.mean(smp ** 2)))
-        if rms > 1e-9:
-            smp = smp * (targets["samples"] * d_rms / rms)
+    if smp is not None and len(smp) > 0 and float(np.max(np.abs(smp))) > 1e-6:
+        # sample-level: relative to drum RMS, with mode-dependent target
+        s_rms = float(np.sqrt(np.mean(smp ** 2)))
+        if s_rms > 1e-9:
+            # scale sample bus so its peak relative to drums matches the mode target
+            smp = smp * (targets["samples"] * d_rms / s_rms)
+        # light compression + tanh peak control
         smp = np.tanh(smp * 1.05)
+        leveled["samples"] = smp
+    elif smp is not None:
         leveled["samples"] = smp
     return leveled
 

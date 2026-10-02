@@ -8,6 +8,7 @@ import os
 import struct
 import sys
 import tempfile
+import threading
 import time
 import wave
 
@@ -63,11 +64,55 @@ def main() -> int:
         assert svc.add_root(root)["id"] == added["id"]
         assert len(svc.roots()) == 1
 
-        status = svc.start_scan(added["id"])
-        assert status["state"] == "SCANNING"
+        # Pause at the root-directory callback to verify status advances during
+        # discovery instead of looking idle until the entire tree is enumerated.
+        from timbor.samples.scanner import scan_directory as real_scan_directory
+        import studio.sample_library as sample_library_module
+        discovery_paused = threading.Event()
+        resume_discovery = threading.Event()
+
+        def paused_scan(path, follow_symlinks=False, progress_callback=None,
+                        cancel_event=None):
+            def report(count, current_path):
+                if progress_callback:
+                    progress_callback(count, current_path)
+                if current_path == os.path.realpath(root) and not discovery_paused.is_set():
+                    discovery_paused.set()
+                    resume_discovery.wait(5)
+            return real_scan_directory(path, follow_symlinks, report, cancel_event)
+
+        sample_library_module.scan_directory = paused_scan
+        try:
+            status = svc.start_scan(added["id"])
+            assert status["state"] == "SCANNING"
+            assert discovery_paused.wait(5), "scanner did not report discovery start"
+            active = svc.scan_status()
+            assert active["state"] == "SCANNING" and active["current_path"] == os.path.realpath(root), active
+            assert active["discovered"] == 0, active
+        finally:
+            resume_discovery.set()
+            sample_library_module.scan_directory = real_scan_directory
         done = wait_scan(svc)
         assert done["state"] == "COMPLETE", done
         assert done["discovered"] == 2 and done["analyzed"] == 2, done
+        assert done["current_path"] == "", done
+
+        # Cancelling during discovery must stop traversal and leave the existing
+        # index intact; a new scan can start after cancellation settles.
+        discovery_paused.clear()
+        resume_discovery.clear()
+        sample_library_module.scan_directory = paused_scan
+        try:
+            svc.start_scan(added["id"])
+            assert discovery_paused.wait(5), "scanner did not pause for cancellation test"
+            requested = svc.cancel_scan()
+            assert requested["cancellation_requested"]
+        finally:
+            resume_discovery.set()
+            sample_library_module.scan_directory = real_scan_directory
+        cancelled = wait_scan(svc)
+        assert cancelled["state"] == "CANCELLED", cancelled
+        assert svc.search({"q": "amen"})["total"] == 2
 
         result = svc.search({"q": "amen", "page_size": "1", "sort": "name"})
         assert result["total"] == 2 and len(result["results"]) == 1
@@ -101,6 +146,34 @@ def main() -> int:
         stats = svc.root_stats(root)
         assert stats["duplicate_groups"] == 1, stats
         assert stats["analyzed"] == 2 and stats["files"] == 2
+
+        # While analysis is not interruptible mid-file, cancellation takes
+        # effect immediately after the current analyzer call returns.
+        from timbor.samples import analyzer as analyzer_module
+        real_analyze_file = analyzer_module.analyze_file
+        analysis_started = threading.Event()
+        resume_analysis = threading.Event()
+        new_sample = os.path.join(root, "new", "cancel_me.wav")
+        write_tone(new_sample, frequency=330)
+
+        def paused_analyze_file(path, fmt):
+            analysis_started.set()
+            resume_analysis.wait(5)
+            return real_analyze_file(path, fmt)
+
+        analyzer_module.analyze_file = paused_analyze_file
+        try:
+            svc.start_scan(added["id"])
+            assert analysis_started.wait(5), "analysis did not start"
+            requested = svc.cancel_scan()
+            assert requested["cancellation_requested"]
+        finally:
+            resume_analysis.set()
+            analyzer_module.analyze_file = real_analyze_file
+        cancelled = wait_scan(svc)
+        assert cancelled["state"] == "CANCELLED", cancelled
+        assert svc.search({"q": "cancel_me"})["total"] == 0
+        os.remove(new_sample)
 
         # Change/add/remove are detected and keyed only to this registered root.
         changed = amen

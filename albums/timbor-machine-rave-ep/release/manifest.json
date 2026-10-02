@@ -7,22 +7,22 @@
   "source_album_project": "TIMBOR \u2014 Machine Rave EP"
  },
  "audio": {
-  "album_master_hash": "aef39072b6381d306c63e0563d0e2b9c",
+  "album_master_hash": "4c4d5d9f0fa7fa90e1a36ea70c2a18b4",
   "bit_depth": 32,
   "channels": 2,
   "sample_rate": 44100
  },
  "format": "timbor-release-manifest",
  "provenance": {
-  "configuration_hash": "8fb6aaac",
+  "configuration_hash": "e425e236",
   "generator_version": "0.3.0",
   "limiter_applied": false,
-  "loudness_mode": "preserve"
+  "loudness_mode": "match"
  },
  "sequence": {
-  "config_hash": "8fb6aaac",
-  "duration_seconds": 252.8282,
-  "mode": "gap",
+  "config_hash": "e425e236",
+  "duration_seconds": 237.8282,
+  "mode": "crossfade",
   "quantize": "none",
   "transitions": [
    {
@@ -30,42 +30,42 @@
     "curve": "equal_power",
     "destination_bpm": 167.0,
     "destination_position": 1,
-    "duration_seconds": 2.0,
-    "gap_samples": 88200,
-    "overlap_samples": 0,
+    "duration_seconds": 3.0,
+    "gap_samples": 0,
+    "overlap_samples": 132300,
     "parameters": {},
     "quantize": "none",
     "source_bpm": 170.0,
     "source_position": 0,
-    "type": "gap"
+    "type": "equal_power_crossfade"
    },
    {
     "bpm_mismatch": false,
     "curve": "equal_power",
     "destination_bpm": 142.0,
     "destination_position": 2,
-    "duration_seconds": 2.0,
-    "gap_samples": 88200,
-    "overlap_samples": 0,
+    "duration_seconds": 3.0,
+    "gap_samples": 0,
+    "overlap_samples": 132300,
     "parameters": {},
     "quantize": "none",
     "source_bpm": 167.0,
     "source_position": 1,
-    "type": "gap"
+    "type": "equal_power_crossfade"
    },
    {
     "bpm_mismatch": false,
     "curve": "equal_power",
     "destination_bpm": 155.0,
     "destination_position": 3,
-    "duration_seconds": 2.0,
-    "gap_samples": 88200,
-    "overlap_samples": 0,
+    "duration_seconds": 3.0,
+    "gap_samples": 0,
+    "overlap_samples": 132300,
     "parameters": {},
     "quantize": "none",
     "source_bpm": 142.0,
     "source_position": 2,
-    "type": "gap"
+    "type": "equal_power_crossfade"
    }
   ]
  },

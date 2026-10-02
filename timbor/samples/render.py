@@ -103,10 +103,14 @@ _ROLE_EVENT_TYPE = {
 def snap_loop_bars(m: SampleMetadata, bpm: float) -> float:
     """Choose a musical length for this loop based on its natural duration."""
     d = m.duration or 2.0
-    for cand in (8, 4, 2, 1):
-        if d >= cand * (60.0 / bpm) * 4 * 0.85:
+    # preferred musical lengths, weighted toward common loop sizes
+    cand_weights = [(8, 0.3), (4, 0.3), (2, 0.2), (1, 0.15), (0.5, 0.05)]
+    best = float(snap_bars(d, bpm, allowed=(0.5, 0.25, 1.0)))
+    # try to snap to common loop sizes and pick the weighted best
+    for cand, w in cand_weights:
+        if abs(cand - best) < 0.15:
             return float(cand)
-    return float(snap_bars(d, bpm, allowed=(0.5, 0.25, 1.0)))
+    return best
 
 
 def _bar_list(song) -> list[tuple[str, float, int, int]]:
@@ -162,7 +166,7 @@ def decide_placements(song, assignments: list[dict]) -> list[dict]:
                         stretch_ratio=1.0, reverse=False, kind="loop",
                         variant="drop")
             if role in _ONESHOT_ROLES:
-                if abs_bar not in entries:
+                if abs_bar not in entries and sec_name not in ("intro", "outro"):
                     continue
                 base["kind"] = "oneshot"
                 if role == "riser":
@@ -380,7 +384,30 @@ def qc_samples(song, assignments: list[dict]) -> list[str]:
                 notes.append(f"sample {m.filename}: key {m.key} -> song {song.key} "
                              f"{song.scale} -> transposed {shift:+.0f} st "
                              f"(conf {m.key_confidence:.2f})")
-    if any(a["role"] == "bass_sample" for a in assignments):
+    # report sample-to-procedural blend status
+    bass_samples = [a for a in assignments if a["role"] == "bass_sample"]
+    if bass_samples:
         notes.append("sampled bass layered over procedural bass -> sample HP'd in "
                      "mix to keep low end clean")
+    # report overall sample bus level relative to drums
+    if assignments:
+        drum_rms = 0.0
+        s_rms = 0.0
+        count = 0
+        for a in assignments:
+            m = a["sample"]
+            try:
+                x, _ = load_audio(m)
+                if len(x) > 0:
+                    drum_rms += float(np.sqrt(np.mean(x ** 2)))
+                    s_rms += float(np.sqrt(np.mean(x ** 2)))
+                    count += 1
+            except:
+                pass
+        if count > 0:
+            drum_rms = drum_rms / count
+            s_rms = s_rms / count
+            if drum_rms > 1e-4 and s_rms > 1e-4:
+                ratio = 20 * np.log10(max(s_rms / drum_rms, 1e-6))
+                notes.append(f"sample bus RMS relative to drums: {ratio:+.1f} dB")
     return notes

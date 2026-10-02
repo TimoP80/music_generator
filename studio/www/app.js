@@ -72,6 +72,7 @@ const libraryApi = {
   add: (path) => api.post("/api/sample-libraries", { path }),
   remove: (id) => api.delete(`/api/sample-libraries/${id}`),
   scan: (root_id) => api.post("/api/sample-libraries/scan", { root_id }),
+  cancelScan: () => api.post("/api/sample-libraries/scan/cancel"),
   scanStatus: () => api.get("/api/sample-libraries/scan/status"),
 };
 const sampleApi = {
@@ -109,6 +110,30 @@ const releaseApi = {
   doc: () => api.get("/api/release").catch(() => null),
   tree: () => api.get("/api/release/tree"),
 };
+const createApi = {
+  config: () => api.get("/api/create/config"),
+  submit: (body) => api.post("/api/create", body),
+  jobs: () => api.get("/api/create/jobs"),
+  job: (id) => api.get(`/api/creations/takes/${encodeURIComponent(id)}`),
+  creations: (params = {}) => api.get(`/api/creations?${new URLSearchParams(params)}`),
+  creation: (id) => api.get(`/api/creations/${encodeURIComponent(id)}`),
+  update: (id, body) => api.post(`/api/creations/${encodeURIComponent(id)}`, body),
+  create: (body) => api.post("/api/creations", body),
+  duplicate: (id) => api.post(`/api/creations/${encodeURIComponent(id)}/duplicate`, {}),
+  favorite: (creation, take, favorite) => api.post(`/api/creations/${creation}/takes/${take}/favorite`, { favorite }),
+  takeNotes: (creation, take, notes) => api.post(`/api/creations/${creation}/takes/${take}/notes`, { notes }),
+  renameTake: (creation, take, name) => api.post(`/api/creations/${creation}/takes/${take}/name`, { name }),
+  retry: (creation, take) => api.post(`/api/creations/${creation}/takes/${take}/retry`, {}),
+  retryFailed: (creation) => api.post(`/api/creations/${creation}/retry-failed`, {}),
+  generateMissing: (creation) => api.post(`/api/creations/${creation}/generate-missing`, {}),
+  remove: (id) => api.delete(`/api/creations/${id}?confirm=true`),
+  removeTake: (creation, take) => api.delete(`/api/creations/${creation}/takes/${take}?confirm=true`),
+  recipe: (id) => api.get(`/api/creations/takes/${id}/recipe`),
+  waveform: (id, bins = 800) => api.get(`/api/creations/takes/${id}/waveform?bins=${bins}`),
+  presets: () => api.get("/api/create/presets"),
+  savePreset: (body) => api.post("/api/create/presets", body),
+  deletePreset: (id) => api.delete(`/api/create/presets/${id}`),
+};
 
 const api = {
   async get(url) {
@@ -139,6 +164,7 @@ const api = {
 /* --------------------------------------------------------- app state */
 const app = {
   screen: "overview",
+  createJobs: [],
   health: null,
   album: null,
   tracks: null,
@@ -405,6 +431,7 @@ const con = {
 
 /* ============================================================= shell === */
 const SCREENS = {
+  create: { title: "NEW MUSIC", render: screenCreate },
   overview: { title: "OVERVIEW", render: screenOverview },
   dna: { title: "DNA", render: screenDna },
   tracks: { title: "TRACKS", render: screenTracks },
@@ -574,6 +601,681 @@ function projectTimelineShared(order, mode, gap, xfade) {
     cursor = cursor - overlap + dur;
   });
   return { blocks, total: Math.max(1, cursor) };
+}
+
+/* ====================================================== NEW MUSIC ===== */
+async function screenCreateLegacy() {
+  const config = await createApi.config();
+  const recent = await createApi.jobs();
+  app.createJobs = recent.jobs || [];
+
+  const prompt = h("textarea", { class: "create-prompt", id: "create-prompt",
+    maxlength: "1000", placeholder: "Describe the sound in your head…\n\nExample: neon-soaked 90s rave, rolling breakbeats, warm pads and a huge euphoric hook" });
+  const engine = h("select", { class: "create-select", id: "create-engine" },
+    h("option", { value: "procedural" }, "TIMBOR PROCEDURAL · LOCAL"),
+    h("option", { value: "stable-audio", disabled: !config.stable_audio_ready },
+      config.stable_audio_ready ? "STABLE AUDIO 3 · MODAL" : "STABLE AUDIO 3 · SETUP REQUIRED"),
+    h("option", { value: "yue2", disabled: !config.yue2_ready },
+      config.yue2_ready ? "YuE2 · MODAL · PERSONAL/NONCOMMERCIAL" : "YuE2 · SETUP REQUIRED"),
+    h("option", { value: "acestep", disabled: !config.acestep_ready },
+      config.acestep_ready ? "ACE-STEP 1.5 · MODAL" : "ACE-STEP 1.5 · SETUP REQUIRED"));
+  const genre = h("select", { class: "create-select", id: "create-genre" },
+    h("option", { value: "" }, "AUTO / PROMPT-LED"),
+    ...(config.genres || []).map((g) => h("option", { value: g.id },
+      `${g.id.replace(/_/g, " ").toUpperCase()} · ${g.bpm_min}–${g.bpm_max} BPM`)));
+  const sampleLibrary = h("select", { class: "create-select", id: "create-library" },
+    h("option", { value: "" }, "NO SAMPLE LIBRARY"),
+    ...(config.sample_libraries || []).map((library) => h("option", { value: library.id },
+      `${library.name.toUpperCase()} · ${library.files} FILES`)));
+  const key = h("input", { type: "text", id: "create-key", maxlength: "40",
+    placeholder: "AUTO", list: "create-key-options" });
+  const keyOptions = h("datalist", { id: "create-key-options" },
+    ...["C minor", "C major", "C# minor", "D minor", "D major", "D# minor", "E minor", "F minor", "F major", "F# minor", "G minor", "G major", "G# minor", "A minor", "A major", "A# minor", "B minor"].map((v) => h("option", { value: v })));
+  const mood = h("select", { class: "create-select", id: "create-mood" },
+    h("option", { value: "" }, "NO MOOD OVERRIDE"),
+    ...(config.moods || []).map((m) => h("option", { value: m }, m.toUpperCase())));
+  const bpm = h("input", { type: "number", id: "create-bpm", min: "40", max: "300",
+    placeholder: "AUTO", step: "1", inputmode: "numeric" });
+  const bars = h("select", { class: "create-select", id: "create-bars" },
+    ...[16, 32, 48, 64, 96, 128].map((n) => h("option", { value: n,
+      selected: n === 32 }, `${n} BARS`)));
+  const seed = h("input", { type: "number", id: "create-seed", min: "0",
+    max: "4294967295", placeholder: "RANDOM EACH TAKE", step: "1" });
+  const authenticity = h("select", { class: "create-select", id: "create-authenticity" },
+    ...["hybrid", "authentic", "modern", "experimental"].map((v) =>
+      h("option", { value: v, selected: v === "hybrid" }, v.toUpperCase())));
+  const sampleMode = h("select", { class: "create-select", id: "create-samples" },
+    ...["balanced", "off", "subtle", "heavy"].map((v) =>
+      h("option", { value: v, selected: v === "balanced" }, v.toUpperCase())));
+  const era = h("input", { type: "text", id: "create-era", maxlength: "80",
+    placeholder: "e.g. 1994 Rotterdam" });
+  const lyrics = h("textarea", { class: "create-prompt", id: "create-lyrics",
+    maxlength: "4096", placeholder: "Optional lyrics with section tags, or leave blank for instrumental music" });
+  const lyricsControl = h("label", { class: "wide create-remote-only" },
+    h("span", { class: "create-label" }, "LYRICS · OPTIONAL"), lyrics);
+  const duration = h("input", { type: "range", id: "create-duration", min: "5",
+    max: "120", step: "1", value: "30" });
+  const durationValue = h("span", { class: "mono acc", id: "create-duration-value" }, "30 SEC");
+  duration.addEventListener("input", () => {
+    duration._userAdjusted = true;
+    durationValue.textContent = `${duration.value} SEC`;
+  });
+  const durationControl = h("label", { class: "duration-field create-remote-only" },
+    h("span", { class: "create-label" }, "DURATION"),
+    h("div", { class: "duration-row" }, duration, durationValue));
+  const barsControl = h("label", { class: "create-procedural-only" },
+    h("span", { class: "create-label" }, "ARRANGEMENT LENGTH"), bars);
+  const authenticityControl = h("label", { class: "create-procedural-only" },
+    h("span", { class: "create-label" }, "AUTHENTICITY"), authenticity);
+  const sampleModeControl = h("label", { class: "create-procedural-only" },
+    h("span", { class: "create-label" }, "SAMPLE BLEND"), sampleMode);
+  const sampleLibraryControl = h("label", { class: "create-procedural-only" },
+    h("span", { class: "create-label" }, "SAMPLE LIBRARY"), sampleLibrary);
+  const eraControl = h("label", { class: "create-remote-only" },
+    h("span", { class: "create-label" }, "ERA / REFERENCE"), era);
+  const engineNote = h("div", { class: "create-side-foot mono", id: "create-engine-note" },
+    "LOCAL ENGINE · NO CLOUD COST BY DEFAULT");
+  function updateEngineControls() {
+    const remote = engine.value !== "procedural";
+    const durationMin = engine.value === "acestep" ? 10 : engine.value === "stable-audio" ? 1 : 5;
+    const durationMax = engine.value === "stable-audio" ? 120
+      : engine.value === "yue2" ? (config.yue2_max_duration || 600)
+      : engine.value === "acestep" ? (config.acestep_max_duration || 600) : 120;
+    const durationDefault = engine.value === "yue2" ? (config.yue2_default_duration || 180)
+      : engine.value === "acestep" ? (config.acestep_default_duration || 30) : 30;
+    duration.min = String(durationMin);
+    duration.max = String(durationMax);
+    durationValue.textContent = `${duration.value} SEC`;
+    if (!duration._userAdjusted || Number(duration.value) < durationMin || Number(duration.value) > durationMax) {
+      duration.value = String(Math.min(durationMax, Math.max(durationMin, durationDefault)));
+      duration._userAdjusted = false;
+    }
+    durationValue.textContent = `${duration.value} SEC`;
+    [barsControl, authenticityControl, sampleModeControl, sampleLibraryControl].forEach((el) => { el.hidden = remote; });
+    [eraControl, durationControl, lyricsControl].forEach((el) => { el.hidden = !remote; });
+    const notes = {
+      "stable-audio": "STABLE AUDIO · MODAL BILLING APPLIES · MAX 120 SECONDS",
+      yue2: "YuE2 · PERSONAL/NONCOMMERCIAL UNLESS SEPARATELY LICENSED · DURATION IS A TARGET",
+      acestep: "ACE-STEP 1.5 · MODAL BILLING APPLIES · 10–600 SECONDS",
+      procedural: "LOCAL ENGINE · NO CLOUD COST BY DEFAULT",
+    };
+    engineNote.textContent = notes[engine.value] || notes.procedural;
+  }
+  engine.addEventListener("change", updateEngineControls);
+  const status = h("div", { class: "create-status", id: "create-status" },
+    h("span", { class: "led" }), h("span", {}, "READY WHEN YOU ARE"));
+  const createButton = h("button", { class: "btn primary create-submit", id: "create-submit" },
+    h("span", {}, "✦"), " CREATE TRACK");
+  let createPending = false;
+  const history = h("div", { class: "create-history", id: "create-history" });
+
+  function drawHistory() {
+    history.innerHTML = "";
+    const rows = app.createJobs || [];
+    if (!rows.length) {
+      history.append(h("div", { class: "create-empty mono faint" },
+        "Your finished pieces will appear here. Procedural takes include a project and stems; Stable Audio takes include the validated WAV and metadata."));
+      return;
+    }
+    for (const job of rows) {
+      const running = ["queued", "running"].includes(job.status);
+      history.append(h("article", { class: `create-take ${job.status}` },
+        h("div", { class: "take-icon" }, job.status === "done" ? "♫" : running ? "◌" : "!"),
+        h("div", { class: "take-main" },
+          h("div", { class: "take-name" }, job.prompt || "Untitled take"),
+          h("div", { class: "take-meta mono" },
+            `${(job.engine || "procedural").toUpperCase()} · ${job.seed == null ? "RANDOM SEED" : `SEED ${job.seed}`} · ${job.status.toUpperCase()}${job.duration_seconds ? ` · ${fmtTime(job.duration_seconds)}` : ""}`),
+          job.error ? h("div", { class: "take-error mono" }, job.error) : null),
+        h("div", { class: "take-actions" },
+          job.audio_url ? h("button", { class: "btn tiny", onclick: () =>
+            player.playSingle({ mediaUrl: job.audio_url, name: job.prompt || "TIMBOR take",
+              dur: job.duration_seconds }) }, "▶ LISTEN") : null,
+          job.audio_url ? h("a", { class: "btn tiny", href: job.audio_url,
+        download: `${String(job.prompt || "timbor-track").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "timbor-track"}.wav` }, "↓ WAV") :
+            h("span", { class: `take-state ${job.status}` }, running ? "WORKING" : "FAILED"))));
+    }
+  }
+  drawHistory();
+
+  async function refreshCreation(jobId, createStatus = status) {
+    let finished = false;
+    for (let i = 0; i < 1800; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+      if (app.screen !== "create") return;
+      try {
+        const updated = await createApi.job(jobId);
+        app.createJobs = [updated, ...(app.createJobs || []).filter((item) => item.id !== jobId)];
+        drawHistory();
+        if (updated.status === "done") {
+          createStatus.className = "create-status done";
+          createStatus.replaceChildren(h("span", { class: "led" }),
+            h("span", {}, `TAKE READY · ${fmtTime(updated.duration_seconds)} · LISTEN OR DOWNLOAD BELOW`));
+          toast("Your track is ready to play and download.");
+          finished = true;
+          return;
+        }
+        if (updated.status === "error") {
+          createStatus.className = "create-status error";
+          createStatus.replaceChildren(h("span", { class: "led red" }), h("span", {}, updated.error || "Generation failed."));
+          finished = true;
+          return;
+        }
+        createStatus.className = "create-status working";
+        createStatus.replaceChildren(h("span", { class: "led pulse" }),
+          h("span", {}, updated.status === "queued" ? "QUEUED · PREPARING YOUR SESSION" : "COMPOSING · THIS CAN TAKE A LITTLE WHILE"));
+      } catch (error) {
+        createStatus.className = "create-status error";
+        createStatus.replaceChildren(h("span", { class: "led red" }), h("span", {}, error.message));
+        finished = true;
+        return;
+      }
+    }
+    if (!finished && app.screen === "create") {
+      createStatus.className = "create-status error";
+      createStatus.replaceChildren(h("span", { class: "led red" }), h("span", {}, "Still working; check the system log for status."));
+    }
+  }
+
+  createButton.addEventListener("click", async () => {
+    if (createPending) return;
+    createPending = true;
+    createButton.disabled = true;
+    status.className = "create-status working";
+    status.replaceChildren(h("span", { class: "led pulse" }), h("span", {}, "SENDING YOUR SESSION…"));
+    try {
+      const selectedEngine = engine.value;
+      const result = await createApi.submit({
+        prompt: prompt.value, engine: selectedEngine, genre: genre.value,
+        mood: mood.value, bpm: bpm.value, key: key.value, seed: seed.value,
+        sample_library: sampleLibrary.value,
+        bars: Number(bars.value), duration: Number(duration.value), era: era.value,
+        lyrics: lyrics.value, authenticity: authenticity.value, sample_mode: sampleMode.value,
+      });
+      app.createJobs = [result, ...(app.createJobs || [])];
+      drawHistory();
+      toast(`${selectedEngine === "stable-audio" ? "Stable Audio" : selectedEngine === "yue2" ? "YuE2" : selectedEngine === "acestep" ? "ACE-Step" : "TIMBOR"} is making your track.`);
+      refreshCreation(result.id, status).finally(() => {
+        createPending = false;
+        createButton.disabled = false;
+      });
+    } catch (error) {
+      status.className = "create-status error";
+      status.replaceChildren(h("span", { class: "led red" }), h("span", {}, error.message));
+      createPending = false;
+      createButton.disabled = false;
+    }
+  });
+
+  const stableNotice = h("div", { class: `create-notice ${config.stable_audio_ready ? "ready" : ""}` },    h("span", {}, config.stable_audio_ready ? "●" : "ⓘ"),
+    h("span", {}, config.stable_audio_ready
+      ? "Stable Audio 3 is configured. Remote generation is billed by Modal."
+      : "Stable Audio 3 is optional and unavailable until Modal, Hugging Face model access, and local credentials are configured."));
+
+  const host = h("div", { class: "create-screen" },
+    h("section", { class: "create-hero" },
+      h("div", { class: "create-kicker mono" }, h("i"), " TIMBOR MUSIC WORKSHOP · GENERATIVE AUDIO"),
+      h("div", { class: "create-hero-row" },
+        h("div", {}, h("h1", {}, "Make something\nthat moves."),
+          h("p", {}, "Start with a feeling. Shape the sound. Keep the take you love.")),
+        h("div", { class: "create-orbit", "aria-hidden": "true" },
+          h("i", {}), h("i", {}), h("i", {}), h("b", {}, "♫"))),
+      h("div", { class: "create-hero-chips" },
+        h("span", {}, "01 / DESCRIBE IT"), h("span", {}, "02 / SHAPE THE GROOVE"),
+        h("span", {}, "03 / PLAY YOUR TAKE"))),
+    h("div", { class: "create-workspace" },
+      h("div", { class: "create-main-column" },
+        panel("01 — THE IDEA", h("label", { class: "create-label", for: "create-prompt" }, "WHAT SHOULD IT FEEL LIKE?"),
+          prompt, h("div", { class: "create-help" }, "A few vivid details go a long way · max 1,000 characters")),
+        panel("02 — SHAPE THE SOUND",
+          h("div", { class: "create-fields" },
+            h("label", {}, h("span", { class: "create-label" }, "GENERATION ENGINE"), engine),
+            h("label", {}, h("span", { class: "create-label" }, "STYLE / GENRE"), genre),
+            h("label", {}, h("span", { class: "create-label" }, "MOOD"), mood),
+            h("label", {}, h("span", { class: "create-label" }, "TEMPO · BPM"), bpm),
+            h("label", {}, h("span", { class: "create-label" }, "KEY CENTER"), key, keyOptions),
+            barsControl, authenticityControl, sampleModeControl, sampleLibraryControl, eraControl, durationControl, lyricsControl)),
+        stableNotice),
+      h("aside", { class: "create-side-column" },
+        panel("03 — MAKE A TAKE",
+          h("div", { class: "create-side-copy" }, "Same seed, same composition. Leave blank for a new surprise."),
+          h("label", { class: "create-label", for: "create-seed" }, "REPRODUCIBLE SEED"),
+          h("div", { class: "seed-row" }, seed,
+            h("button", { class: "btn tiny", title: "Randomize seed", onclick: () => {
+              seed.value = String(Math.floor(Math.random() * 2**32));
+            } }, "↻ RANDOMIZE")),
+          status, createButton,
+          engineNote),
+        panel("RECENT TAKES", history))));
+  updateEngineControls();
+  for (const job of app.createJobs.filter((item) => ["queued", "running"].includes(item.status)))
+    refreshCreation(job.id);
+  if (app.createJobs.some((item) => ["queued", "running"].includes(item.status)))
+    createButton.disabled = true;
+  return host;
+}
+
+async function screenCreate() {
+  let response;
+  const [config, initialResponse, presetResponse] = await Promise.all([
+    createApi.config(), createApi.creations({ page: 1, page_size: 30 }), createApi.presets(),
+  ]);
+  response = initialResponse;
+  app.createJobs = (response.creations || []).flatMap((c) => c.takes || []);
+  let creations = response.creations || [], presets = presetResponse.presets || [];
+  let filter = "all", query = "", page = 1;
+  let compareA = "", compareB = "", creationBusy = false;
+
+  const prompt = h("textarea", { class: "create-prompt", maxlength: "1000",
+    placeholder: "Describe the sound in your head…" });
+  const engine = h("select", { class: "create-select" },
+    h("option", { value: "procedural" }, "LOCAL PROCEDURAL · READY"),
+    h("option", { value: "stable-audio", disabled: !config.stable_audio_ready },
+      config.stable_audio_ready ? "STABLE AUDIO 3 · CONFIGURED" : "STABLE AUDIO 3 · UNAVAILABLE — ACCESS / CONFIG REQUIRED"),
+    h("option", { value: "yue2", disabled: !config.yue2_ready },
+      config.yue2_ready ? "YuE2 · PERSONAL/NONCOMMERCIAL" : "YuE2 · SETUP REQUIRED"),
+    h("option", { value: "acestep", disabled: !config.acestep_ready },
+      config.acestep_ready ? "ACE-STEP 1.5 · CONFIGURED" : "ACE-STEP 1.5 · SETUP REQUIRED"));
+  const genre = h("select", { class: "create-select" }, h("option", { value: "" }, "AUTO / PROMPT-LED"),
+    ...(config.genres || []).map((g) => h("option", { value: g.id }, `${g.id.replace(/_/g, " ").toUpperCase()} · ${g.bpm_min}–${g.bpm_max} BPM`)));
+  const mood = h("select", { class: "create-select" }, h("option", { value: "" }, "NO MOOD OVERRIDE"),
+    ...(config.moods || []).map((x) => h("option", { value: x }, x.toUpperCase())));
+  const library = h("select", { class: "create-select" }, h("option", { value: "" }, "NO SAMPLE LIBRARY"),
+    ...(config.sample_libraries || []).map((x) => h("option", { value: x.id }, `${x.name.toUpperCase()} · ${x.files} SAMPLES · ${(x.total_duration || 0).toFixed(1)}s · ${Object.keys(x.categories || {}).join(", ") || "categories unknown"} · ${x.pending || 0} PENDING / ${x.errors || 0} MISSING`)));
+  const bpm = h("input", { type: "number", min: "40", max: "300", placeholder: "AUTO", step: "1" });
+  const key = h("input", { type: "text", maxlength: "40", placeholder: "AUTO KEY" });
+  const seed = h("input", { type: "number", min: "0", max: "4294967295", placeholder: "RANDOM", step: "1" });
+  const bars = h("select", { class: "create-select" }, ...[16,32,48,64,96,128].map((n) => h("option", { value: n, selected: n === 32 }, `${n} BARS`)));
+  const era = h("input", { type: "text", maxlength: "80", placeholder: "e.g. 1994 Rotterdam" });
+  const eraControl = h("label", {}, h("span", { class: "create-label" }, "ERA / REFERENCE"), era);
+  const duration = h("input", { type: "range", min: "1", max: "120", value: "30" });
+  const durationControl = h("label", {}, h("span", { class: "create-label" }, "REMOTE DURATION · SECONDS"), duration);
+  const lyrics = h("textarea", { maxlength: "4096", placeholder: "Optional lyrics with [Verse]/[Chorus] tags" });
+  const lyricsControl = h("label", { class: "wide" }, h("span", { class: "create-label" }, "LYRICS · OPTIONAL"), lyrics);
+  const count = h("select", { class: "create-select" }, ...[1,2,4,8,16].map((n) => h("option", { value: n, selected: n === 1 }, `${n} TAKE${n === 1 ? "" : "S"}`)));
+  const seedMode = h("select", { class: "create-select" }, h("option", { value: "vary", selected: true }, "SAME PARAMETERS · NEW SEEDS"), h("option", { value: "same" }, "SAME SEED · CONTROLLED REPEAT"));
+  const authenticity = h("select", { class: "create-select" }, ...["hybrid","authentic","modern","experimental"].map((x) => h("option", { value: x, selected: x === "hybrid" }, x.toUpperCase())));
+  const sampleMode = h("select", { class: "create-select" }, ...["balanced","off","subtle","heavy"].map((x) => h("option", { value: x, selected: x === "balanced" }, x.toUpperCase())));
+  const name = h("input", { type: "text", maxlength: "120", placeholder: "AUTO NAME — e.g. Gabber Experiment · 175 BPM · F Minor" });
+  const tags = h("input", { type: "text", placeholder: "gabber, rave, keeper" });
+  let selectedCreation = creations[0] || null;
+  const notes = h("textarea", { maxlength: "5000", placeholder: "Creation notes…", onblur: async () => {
+    if (!selectedCreation) return;
+    try { await createApi.update(selectedCreation.id, { notes: notes.value }); }
+    catch (e) { toast(e.message, "err"); }
+  } });
+  const status = h("div", { class: "create-status" }, h("span", { class: "led" }), "LOCAL PROCEDURAL · READY");
+  const history = h("div", { class: "creation-browser" });
+  const grid = h("div", { class: "create-grid" });
+  const queryBox = h("input", { type: "text", class: "lib-search", placeholder: "Search prompt, genre, BPM, key, seed, notes, tags…" });
+  const sampleSearch = h("input", { type: "search", class: "lib-search", placeholder: "Filter categories…" });
+  const sampleCategory = h("select", { class: "create-select" }, h("option", { value: "" }, "ALL CATEGORIES"));
+  const sampleSelectionCount = h("span", { class: "mono faint" }, "");
+  const sampleSelection = new Set();
+  let sampleQuery = "", samplePage = 1;
+  const usedSampleIds = new Set();
+  const selectedSampleList = h("div", { class: "take-samples mono" });
+  let visibleSamples = [];
+  const filterBox = h("select", { class: "create-select" }, ...[["all","ALL"],["favorites","FAVORITES"],["recent","RECENT"],["completed","COMPLETED"],["failed","FAILED"],["archived","ARCHIVED"]].map(([v,t]) => h("option", { value: v }, t)));
+  const pageLabel = h("span", { class: "mono faint" }, "");
+  const batchStatus = h("div", { class: "batch-status mono" });
+  const comparePanel = h("div", { class: "compare-panel" });
+  const presetBox = h("select", { class: "create-select" }, h("option", { value: "" }, "LOAD PRESET"));
+  const presetBoxAside = h("select", { class: "create-select" }, h("option", { value: "" }, "LOAD PRESET"));
+  const cardAudio = new Map();
+  const waveformCache = new Map();
+  let waveBins = 400;
+  let takePage = 1;
+  const takesPerPage = 16;
+  const barsControl = h("label", {}, h("span", { class: "create-label" }, "ARRANGEMENT LENGTH"), bars);
+  const authenticityControl = h("label", {}, h("span", { class: "create-label" }, "AUTHENTICITY"), authenticity);
+  const sampleBlendControl = h("label", {}, h("span", { class: "create-label" }, "SAMPLE BLEND"), sampleMode);
+  const sampleLibraryControl = h("label", { class: "wide" }, h("span", { class: "create-label" }, "SAMPLE LIBRARY"), library, sampleSelectionCount, h("div", { class: "row" }, sampleSearch, sampleCategory), selectedSampleList);
+
+  function updateRemoteControls() {
+    const remote = engine.value !== "procedural";
+    const min = engine.value === "acestep" ? 10 : 1;
+    const max = engine.value === "stable-audio" ? 120
+      : engine.value === "yue2" ? (config.yue2_max_duration || 600)
+      : engine.value === "acestep" ? (config.acestep_max_duration || 600) : 120;
+    const recommended = engine.value === "yue2" ? (config.yue2_default_duration || 180)
+      : engine.value === "acestep" ? (config.acestep_default_duration || 30) : 30;
+    duration.min = String(min);
+    duration.max = String(max);
+    if (!duration._userAdjusted || Number(duration.value) < min || Number(duration.value) > max) {
+      duration.value = String(Math.min(max, Math.max(min, recommended)));
+      duration._userAdjusted = false;
+    }
+    [barsControl, authenticityControl, sampleBlendControl, sampleLibraryControl].forEach((control) => { control.hidden = remote; });
+    [eraControl, durationControl, lyricsControl].forEach((control) => { control.hidden = !remote; });
+    if (engine.value !== "procedural") {
+      count.value = "1";
+      count.disabled = true;
+      seedMode.disabled = true;
+    } else {
+      count.disabled = false;
+      seedMode.disabled = false;
+    }
+    const label = engine.value === "yue2" ? "YuE2 · PERSONAL/NONCOMMERCIAL · DURATION IS A TARGET"
+      : engine.value === "acestep" ? "ACE-STEP 1.5 · MODAL BILLING · 10–600 SECONDS"
+      : engine.value === "stable-audio" ? "STABLE AUDIO 3 · MODAL BILLING · MAX 120 SECONDS"
+      : "LOCAL PROCEDURAL · NO CLOUD COST BY DEFAULT";
+    status.replaceChildren(h("span", { class: "led" }), label);
+  }
+  engine.addEventListener("change", updateRemoteControls);
+  duration.addEventListener("input", () => { duration._userAdjusted = true; });
+  function paramsNow() { return { prompt: prompt.value, engine: engine.value, genre: genre.value, mood: mood.value,
+    bpm: bpm.value === "" ? "" : Number(bpm.value), key: key.value, seed: seed.value === "" ? "" : Number(seed.value), sample_library: library.value,
+    selected_samples: [...sampleSelection], era: era.value,
+    bars: Number(bars.value), duration: Number(duration.value), lyrics: lyrics.value, authenticity: authenticity.value,
+    sample_mode: sampleMode.value, takes: Number(count.value), seed_mode: seedMode.value,
+    name: name.value, tags: tags.value.split(",").map((x) => x.trim().replace(/^#/, "")).filter(Boolean) }; }
+  function presetParams() { const p = paramsNow(); delete p.takes; delete p.seed_mode; delete p.name; delete p.tags; return p; }
+  function applyParams(p = {}) {
+    prompt.value = p.prompt || ""; genre.value = p.genre || ""; mood.value = p.mood || "";
+    sampleSelection.clear(); for (const id of p.selected_samples || []) sampleSelection.add(id);
+    bpm.value = p.bpm ?? ""; key.value = p.key || ""; seed.value = p.seed ?? "";
+    if (p.engine && [...engine.options].some((option) => option.value === p.engine && !option.disabled)) engine.value = p.engine;
+    updateRemoteControls();
+    library.value = p.sample_library || "";
+    if (p.bars) bars.value = p.bars; if (p.duration) { duration.value = p.duration; duration._userAdjusted = true; }
+    era.value = p.era || "";
+    lyrics.value = p.lyrics || "";
+    if (Array.isArray(p.tags)) tags.value = p.tags.join(", ");
+    if (p.authenticity) authenticity.value = p.authenticity; if (p.sample_mode) sampleMode.value = p.sample_mode;
+    seedMode.value = "same";
+  }
+  function takeTitle(t) { return t.name || `${t.genre || t.prompt || "Music"} · ${t.bpm ? `${t.bpm} BPM` : "AUTO BPM"} · ${t.key || "AUTO KEY"}`; }
+  function takeWave(t, color = "#1d6b50") {
+    const canvas = h("canvas", { class: "take-wave" });
+    const playhead = h("i", { class: "take-wave-playhead" });
+    const wrap = h("div", { class: "take-wave-wrap" }, canvas, playhead);
+    if (!cardAudio.has(t.id)) cardAudio.set(t.id, new Audio(t.audio_url));
+    const audio = cardAudio.get(t.id);
+    if (audio) {
+      canvas.addEventListener("click", (event) => {
+        if (!Number.isFinite(audio.duration) || !audio.duration) return;
+        const bounds = canvas.getBoundingClientRect();
+        audio.currentTime = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width)) * audio.duration;
+      });
+      audio.ontimeupdate = () => {
+        if (playhead.isConnected && audio.duration) playhead.style.left = `${audio.currentTime / audio.duration * 100}%`;
+      };
+    }
+    const key = `${t.id}:${waveBins}`;
+    const cached = waveformCache.get(key);
+    drawWhenConnected(canvas, cached ? Promise.resolve(cached) : createApi.waveform(t.id, waveBins).then((peaks) => {
+      waveformCache.set(key, peaks); return peaks;
+    }), { color });
+    return wrap;
+  }
+  function refreshPresetOptions() {
+    for (const box of [presetBox, presetBoxAside])
+      box.replaceChildren(h("option", { value: "" }, "LOAD PRESET"), ...presets.map((p) => h("option", { value: p.id }, p.name)));
+  }
+  function drawSampleControls() {
+    const roots = config.sample_libraries || [];
+    const root = roots.find((item) => item.id === library.value);
+    const knownCategories = [...new Set(visibleSamples.map((item) => item.category))].sort();
+    const category = sampleCategory.value.toLowerCase();
+    const q = sampleQuery.trim().toLowerCase();
+    visibleSamples = selectedSampleList._samples || [];
+    const filtered = visibleSamples.filter((item) => (!category || item.category.toLowerCase() === category)
+      && (!q || `${item.filename} ${item.category} ${item.file_tags || ""} ${item.genre_tags || ""}`.toLowerCase().includes(q)));
+    const from = (samplePage - 1) * 8;
+    const shown = filtered.slice(from, from + 8);
+    const priorCategory = sampleCategory.value;
+    sampleCategory.replaceChildren(h("option", { value: "" }, "ALL CATEGORIES"), ...knownCategories.map((value) => h("option", { value }, value.toUpperCase())));
+    sampleCategory.value = knownCategories.includes(priorCategory) ? priorCategory : "";
+    sampleSelectionCount.textContent = `${root?.name || "NO LIBRARY"} · ${root?.files || 0} SAMPLES · ${(root?.total_duration || 0).toFixed(1)}s · ${root?.analyzed || 0} ANALYZED · ${sampleSelection.size} SELECTED · ${usedSampleIds.size} USED BY VISIBLE TAKES · ${sampleSelection.size ? "Selected IDs are saved in recipe metadata; the current procedural selector remains authoritative." : "Used samples are reported from the generated project."}`;
+    selectedSampleList.replaceChildren(...shown.map((sample) => h("label", { class: "sample-pick" },
+      h("input", { type: "checkbox", checked: sampleSelection.has(sample.id), onchange: (event) => {
+        if (event.target.checked) sampleSelection.add(sample.id); else sampleSelection.delete(sample.id);
+        drawSampleControls();
+      } }), h("span", {}, `${sample.filename} · ${sample.category}`))));
+    const pages = Math.max(1, Math.ceil(filtered.length / 8));
+    sampleSelectionList.replaceChildren(h("div", { class: "row" },
+      h("button", { class: "btn tiny", onclick: () => { sampleSelection.clear(); drawSampleControls(); } }, "CLEAR"),
+      h("button", { class: "btn tiny", onclick: () => { for (const sample of filtered) sampleSelection.add(sample.id); drawSampleControls(); } }, "SELECT ALL"),
+      h("button", { class: "btn tiny", onclick: () => { sampleSelection.clear(); for (const sample of filtered.slice().sort(() => Math.random() - .5).slice(0, Math.min(8, filtered.length))) sampleSelection.add(sample.id); drawSampleControls(); } }, "RANDOMIZE"),
+      h("button", { class: "btn tiny", disabled: samplePage <= 1, onclick: () => { samplePage--; drawSampleControls(); } }, "←"),
+      h("span", { class: "mono faint" }, `${filtered.length ? from + 1 : 0}–${Math.min(from + 8, filtered.length)} / ${filtered.length} · PAGE ${samplePage}/${pages}`),
+      h("button", { class: "btn tiny", disabled: samplePage >= pages, onclick: () => { samplePage++; drawSampleControls(); } }, "→"), sampleSelectionCount),
+      selectedSampleList);
+  }
+  const sampleSelectionList = h("div", { class: "sample-selection" });
+  async function loadLibrarySamples() {
+    if (!library.value) { selectedSampleList._samples = []; drawSampleControls(); return; }
+    try {
+      const data = await sampleApi.search({ library: library.value, page: "1", page_size: "10000", sort: "name" });
+      selectedSampleList._samples = data.results || [];
+      sampleCategory.replaceChildren(h("option", { value: "" }, "ALL CATEGORIES"),
+        ...[...new Set(visibleSamples.map((item) => item.category))].sort().map((value) => h("option", { value }, value.toUpperCase())));
+      drawSampleControls();
+    } catch (e) { toast(e.message, "err"); }
+  }
+  function drawCards() {
+    history.replaceChildren();
+    history.append(h("button", { class: "btn tiny", onclick: async () => {
+      try { const c = await createApi.create({ name: "Untitled creation", params: paramsNow(), tags: [] }); await loadPage(); selectedCreation = await createApi.creation(c.id); drawGrid(); }
+      catch (e) { toast(e.message, "err"); }
+    } }, "+ NEW EMPTY CREATION"));
+    for (const c of creations) {
+      const favorites = c.takes.filter((t) => t.favorite).length;
+      const cBpm = c.params.bpm ? `${c.params.bpm} BPM` : "AUTO BPM";
+      const latestTake = c.takes.at(-1) || {};
+      history.append(h("button", { class: `creation-row ${selectedCreation?.id === c.id ? "active" : ""}`, onclick: async () => {
+        try { selectedCreation = await createApi.creation(c.id); notes.value = selectedCreation.notes || ""; tags.value = (selectedCreation.tags || []).join(", "); drawCards(); drawGrid(); } catch (e) { toast(e.message, "err"); }
+      } }, h("b", {}, c.name), h("span", { class: "mono faint" }, `${new Date(c.created_at * 1000).toLocaleDateString()} · ${c.takes.length} TAKES · ★ ${favorites} · ${cBpm} · ${c.params.key || "AUTO KEY"} · ${(latestTake.provider || c.params.engine || "procedural").toUpperCase()} · ${c.status.toUpperCase()} · UPDATED ${new Date(c.updated_at * 1000).toLocaleString()}`)));
+    }
+    pageLabel.textContent = `${response.total || creations.length} CREATIONS · PAGE ${page}`;
+  }
+  function drawGrid() {
+    grid.replaceChildren();
+    if (selectedCreation) { notes.value = selectedCreation.notes || ""; tags.value = (selectedCreation.tags || []).join(", "); }
+    if (!selectedCreation) { grid.append(h("div", { class: "create-empty mono faint" }, "Create a batch or open a saved creation.")); return; }
+    const takes = selectedCreation.takes || [];
+    const pages = Math.max(1, Math.ceil(takes.length / takesPerPage));
+    takePage = Math.min(takePage, pages);
+    const startAt = (takePage - 1) * takesPerPage;
+    batchStatus.replaceChildren(...takes.slice(startAt, startAt + takesPerPage).map((t) => h("span", { class: `batch-item ${t.status}` }, `TAKE ${String(t.take_number || 0).padStart(2,"0")} ${t.status === "done" ? "✓" : t.status === "error" ? "FAILED" : t.status.toUpperCase()}`)));
+    if (!takes.length) { grid.append(h("div", { class: "create-empty mono faint" }, "No takes in this creation.")); return; }
+    if (pages > 1) grid.append(h("div", { class: "row" },
+      h("button", { class: "btn tiny", disabled: takePage <= 1, onclick: () => { takePage--; drawGrid(); } }, "← TAKES"),
+      h("span", { class: "mono faint" }, `TAKES ${startAt + 1}–${Math.min(startAt + takesPerPage, takes.length)} OF ${takes.length}`),
+      h("button", { class: "btn tiny", disabled: takePage >= pages, onclick: () => { takePage++; drawGrid(); } }, "TAKES →")));
+    usedSampleIds.clear();
+    for (const take of takes) for (const item of take.sample_usage?.samples || []) usedSampleIds.add(item.filename);
+    for (const [pageIndex, t] of takes.slice(startAt, startAt + takesPerPage).entries()) {
+      const i = startAt + pageIndex;
+      const running = ["queued","running"].includes(t.status), playable = t.status === "done" && t.audio_url;
+      const canvas = playable ? takeWave(t) : h("div", { class: "take-wave-placeholder mono faint" }, running ? "WAVEFORM AVAILABLE WHEN RENDER COMPLETES" : "NO VALID WAV WAVEFORM");
+      const recipeButton = h("button", { class: "btn tiny", onclick: async () => {
+        try { const recipe = await createApi.recipe(t.id); const json = JSON.stringify(recipe, null, 2); openModal("GENERATION RECIPE", h("div", {}, h("pre", { class: "mono recipe-text" }, json), h("button", { class: "btn", onclick: async () => { await navigator.clipboard?.writeText(json); toast("Recipe copied."); } }, "COPY RECIPE"), h("a", { class: "btn", href: `data:application/json;charset=utf-8,${encodeURIComponent(json)}`, download: `${t.id}-recipe.json` }, "EXPORT RECIPE"))); } catch (e) { toast(e.message, "err"); }
+      } }, "VIEW RECIPE");
+      const actions = h("div", { class: "take-actions" },
+        playable ? h("button", { class: "btn tiny", onclick: () => player.playSingle({ mediaUrl: t.audio_url, name: takeTitle(t), dur: t.duration_seconds }) }, "▶ PLAY") : null,
+        playable ? h("a", { class: "btn tiny", href: t.audio_url, download: `${takeTitle(t).replace(/[^a-z0-9]+/gi,"-").toLowerCase()}.wav` }, "↓ WAV") : null,
+        h("button", { class: `btn tiny ${t.favorite ? "favorite-on" : ""}`, onclick: async () => {
+          t.favorite = !t.favorite; try { await createApi.favorite(selectedCreation.id, t.id, t.favorite); drawCards(); drawGrid(); } catch (e) { t.favorite = !t.favorite; toast(e.message, "err"); }
+        } }, t.favorite ? "★ FAVORITE" : "☆ FAVORITE"),
+        h("button", { class: "btn tiny", onclick: async () => {
+          const renamed = window.prompt("Rename take", t.name || `TAKE ${String(i+1).padStart(2,"0")}`); if (renamed == null) return;
+          try { t.name = renamed.trim(); await createApi.renameTake(selectedCreation.id, t.id, t.name); drawGrid(); } catch (e) { toast(e.message, "err"); }
+        } }, "✎ RENAME"),
+        h("button", { class: "btn tiny", onclick: () => { applyParams({ ...selectedCreation.params, ...t, seed: t.seed }); toast("Parameters loaded; original take remains unchanged."); window.scrollTo({ top: 0, behavior: "smooth" }); } }, "🧬 USE AS BASIS"),
+        h("button", { class: "btn tiny", onclick: () => { compareA = t.id; compareB = compareB === t.id ? "" : compareB; drawCompare(); } }, "SET A"),
+        h("button", { class: "btn tiny", onclick: () => { compareB = t.id; compareA = compareA === t.id ? "" : compareA; drawCompare(); } }, "SET B"),
+        t.status === "error" ? h("button", { class: "btn tiny", onclick: async () => { try { const retried = await createApi.retry(selectedCreation.id, t.id); toast("Retry queued in this creation as a new take."); await loadPage(); if (retried.id) watchTake(retried.id); } catch (e) { toast(e.message, "err"); } } }, "↻ RETRY") : null,
+        recipeButton,
+        h("button", { class: "btn tiny danger", onclick: async () => { if (!confirm("Delete this take and its WAV? This cannot be undone.")) return; try { await createApi.removeTake(selectedCreation.id, t.id); selectedCreation = await createApi.creation(selectedCreation.id); drawGrid(); drawCards(); } catch (e) { toast(e.message, "err"); } } }, "🗑 DELETE"));
+      const row = h("article", { class: `take-card ${t.status}` },
+        h("header", {}, h("strong", {}, `TAKE ${String(t.take_number || i+1).padStart(2,"0")} · ${esc(t.name || "")}`), h("span", { class: `take-state ${t.status}` }, t.status.toUpperCase()), h("span", { class: "spacer" })),
+        h("div", { class: "take-meta mono" }, `SEED ${t.seed ?? "UNKNOWN"} · ${t.duration_seconds ? fmtTime(t.duration_seconds) : "—"} · ${t.bpm || "AUTO"} BPM · ${t.key || "AUTO KEY"} · ${t.provider || t.engine} · WAV ${playable ? "AVAILABLE" : running ? "QUEUED" : "MISSING"}`),
+        canvas,
+        t.analysis ? h("div", { class: "take-analysis mono" }, `${(t.analysis.sample_rate/1000).toFixed(1)} kHz · ${t.analysis.channels === 2 ? "STEREO" : "MONO"} · PEAK ${t.analysis.peak_dbfs} dBFS · RMS ${t.analysis.rms_dbfs} dBFS · CLIP ${t.analysis.clipping ? "YES" : "NONE"} · LUFS ${t.analysis.lufs ?? "not measured"} · TRUE PEAK ${t.analysis.true_peak_dbfs ?? "not measured"} · SILENCE ${t.analysis.silence_start_seconds}s / ${t.analysis.silence_end_seconds}s`) : null,
+        t.error ? h("details", { class: "take-error mono" }, h("summary", {}, "VIEW ERROR"), t.error) : null,
+        t.sample_usage ? h("div", { class: "take-samples mono" }, t.sample_usage.available ? `USED SAMPLES · ${t.sample_usage.samples.map((x) => x.filename).join(", ") || "NONE REPORTED"}` : "Sample usage information unavailable for this engine.") : playable ? h("div", { class: "take-samples mono" }, "Sample usage information unavailable for this engine.") : null,
+        h("label", { class: "take-notes mono" }, "TAKE NOTES", h("textarea", { maxlength: "5000", placeholder: "Notes do not alter generation settings…", onblur: async (e) => { try { t.notes = e.target.value; await createApi.takeNotes(selectedCreation.id, t.id, t.notes); } catch (err) { toast(err.message, "err"); } } }, t.notes || "")), actions);
+      grid.append(row);
+      if (playable && !cardAudio.has(t.id)) cardAudio.set(t.id, new Audio(t.audio_url));
+    }
+    drawCompare();
+  }
+  async function drawCompare() {
+    comparePanel.replaceChildren();
+    const a = selectedCreation?.takes?.find((t) => t.id === compareA), b = selectedCreation?.takes?.find((t) => t.id === compareB);
+    if (!a || !b) { comparePanel.append(h("div", { class: "mono faint" }, "Select TAKE A and TAKE B to compare waveforms and parameters.")); return; }
+    const differences = [["Prompt","prompt"],["Genre","genre"],["Mood","mood"],["BPM","bpm"],["Key","key"],["Duration","duration_requested"],["Seed","seed"],["Engine","provider"]];
+    const table = h("table", { class: "compare-table" }, h("thead", {}, h("tr", {}, h("th", {}, "PARAMETER"), h("th", {}, "TAKE A"), h("th", {}, "TAKE B"))), h("tbody", {}, ...differences.map(([label,key]) => {
+      const left = key === "duration" ? (a.duration_seconds ?? a.duration_requested) : a[key] ?? "—";
+      const right = key === "duration" ? (b.duration_seconds ?? b.duration_requested) : b[key] ?? "—";
+      return h("tr", { class: String(left) !== String(right) ? "changed" : "" }, h("th", {}, label), h("td", {}, String(left)), h("td", {}, String(right)));
+    })));
+    const controls = h("div", { class: "row" }, h("button", { class: "btn", onclick: () => playCompare(false) }, "PLAY A"), h("button", { class: "btn", onclick: () => playCompare(true) }, "PLAY BOTH · SYNC"), h("button", { class: "btn", onclick: () => { cardAudio.get(a.id)?.pause(); cardAudio.get(b.id)?.pause(); } }, "STOP BOTH"), h("button", { class: "btn", onclick: () => { cardAudio.get(a.id)?.pause(); cardAudio.get(b.id)?.pause(); playCompare("b"); } }, "PLAY B"));
+    const wavePairs = [a, b].map((take, index) => {
+      const wave = take.audio_url ? takeWave(take, index ? "#9a7fe0" : "#3fc6e0")
+        : h("div", { class: "mono faint" }, "WAV NOT AVAILABLE");
+      const technical = `${take.duration_seconds || "—"} sec · ${take.analysis?.sample_rate || "—"} Hz · ${take.analysis?.channels || "—"} ch · peak ${take.analysis?.peak_dbfs ?? "—"} dBFS · RMS ${take.analysis?.rms_dbfs ?? "—"} dBFS`;
+      return h("div", {}, h("b", {}, index ? "TAKE B" : "TAKE A"), wave,
+        h("span", { class: "mono faint" }, technical));
+    });
+    comparePanel.append(h("div", { class: "compare-waves" }, ...wavePairs), table, controls);
+  }
+  async function playCompare(selection) {
+    const a = selectedCreation?.takes?.find((t) => t.id === compareA), b = selectedCreation?.takes?.find((t) => t.id === compareB);
+    if (!a?.audio_url || (selection === true && !b?.audio_url)) return;
+    const aa = cardAudio.get(a.id); const bb = selection === true ? cardAudio.get(b.id) : null;
+    if (selection === "b") {
+      const onlyB = cardAudio.get(b?.id);
+      if (!onlyB || !b?.audio_url) return;
+      aa?.pause(); onlyB.currentTime = 0; await onlyB.play(); return;
+    }
+    if (!aa) return;
+    try {
+      aa.currentTime = 0;
+      if (bb) { bb.currentTime = 0; await Promise.all([aa.play(), bb.play()]); }
+      else await aa.play();
+      const sync = () => { if (bb && !aa.paused && !bb.paused && Math.abs(aa.currentTime - bb.currentTime) > 0.04) bb.currentTime = aa.currentTime; };
+      aa.addEventListener("timeupdate", sync);
+      aa.addEventListener("ended", () => { bb?.pause(); aa.removeEventListener("timeupdate", sync); }, { once: true });
+    } catch (e) { toast(e.message, "err"); }
+  }
+  async function loadPage() {
+    try { response = await createApi.creations({ q: query, filter, page, page_size: 30 }); creations = response.creations || []; selectedCreation = creations.find((c) => c.id === selectedCreation?.id) || creations[0] || null; if (document.activeElement !== notes) notes.value = selectedCreation?.notes || ""; if (document.activeElement !== tags) tags.value = (selectedCreation?.tags || []).join(", "); takePage = 1; drawCards(); drawGrid(); drawSampleControls(); }
+    catch (e) { toast(e.message, "err"); }
+  }
+  async function watchTake(id) {
+    for (let i=0; i<1800 && app.screen === "create"; i++) {
+      await new Promise((r) => setTimeout(r, 1100));
+      try { const t = await createApi.job(id); await loadPage(); if (!["queued","running"].includes(t.status)) { if (t.status === "error") toast(`TAKE FAILED: ${t.error || "generation failed"}`, "err"); else toast("Take completed and passed WAV validation."); return; } }
+      catch { return; }
+    }
+  }
+  function drawCardsAndGrid() { drawCards(); drawGrid(); }
+  queryBox.addEventListener("input", () => { query = queryBox.value; page = 1; clearTimeout(queryBox._timer); queryBox._timer = setTimeout(loadPage, 220); });
+  notes.addEventListener("input", () => { clearTimeout(notes._saveTimer); notes._saveTimer = setTimeout(async () => {
+    if (!selectedCreation) return;
+    try { await createApi.update(selectedCreation.id, { notes: notes.value }); selectedCreation.notes = notes.value; }
+    catch (e) { toast(e.message, "err"); }
+  }, 400); });
+  filterBox.addEventListener("change", () => { filter = filterBox.value; page = 1; loadPage(); });
+  library.addEventListener("change", () => { samplePage = 1; sampleSelection.clear(); loadLibrarySamples(); });
+  sampleSearch.addEventListener("input", () => { sampleQuery = sampleSearch.value; samplePage = 1; drawSampleControls(); });
+  sampleCategory.addEventListener("change", () => { samplePage = 1; drawSampleControls(); });
+  for (const box of [presetBox, presetBoxAside]) box.addEventListener("change", () => {
+    const p = presets.find((x) => x.id === box.value); if (p) applyParams(p.params);
+  });
+  let createButton;
+  createButton = h("button", { class: "btn primary create-submit", onclick: async () => {
+    if (creationBusy) return; creationBusy = true; createButton.disabled = true;
+    status.className = "create-status working"; status.replaceChildren(h("span", { class: "led pulse" }), `QUEUING ${count.value} TAKE(S)…`);
+    try {
+      const request = paramsNow();
+      if (selectedCreation && selectedCreation.takes?.length === 0) request.creation_id = selectedCreation.id;
+      const result = await createApi.submit(request);
+      status.className = "create-status working";
+      status.replaceChildren(h("span", { class: "led pulse" }), `BATCH QUEUED · ${result.take_count || 1} TAKE(S)`);
+      name.value = "";
+      if (result.creation_id) selectedCreation = await createApi.creation(result.creation_id);
+      await loadPage();
+      if (result.creation_id) { selectedCreation = await createApi.creation(result.creation_id); drawGrid(); }
+
+      for (const t of result.takes || [result]) watchTake(t.id);
+      toast(`${count.value} ${engine.value === "procedural" ? "local procedural" : engine.value === "yue2" ? "YuE2" : engine.value === "acestep" ? "ACE-Step" : "Stable Audio"} take(s) queued.`);
+    } catch (e) { status.className = "create-status error"; status.textContent = e.message; toast(e.message, "err"); }
+    finally { creationBusy = false; createButton.disabled = false; }
+  } }, "✦ GENERATE TAKE BATCH");
+  const savePresetButton = h("button", { class: "btn tiny", onclick: async () => {
+    const presetName = window.prompt("Preset name"); if (!presetName) return;
+    const existing = presets.find((item) => item.name.toLowerCase() === presetName.trim().toLowerCase());
+    try { const p = await createApi.savePreset({ id: existing?.id, name: presetName, params: presetParams() });
+      if (existing) presets = presets.map((item) => item.id === p.id ? p : item); else presets.push(p);
+      refreshPresetOptions(); toast(existing ? "Preset updated." : "Preset saved."); }
+    catch (e) { toast(e.message, "err"); }
+  } }, "SAVE PRESET");
+  const retryFailedButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; try { const result = await createApi.retryFailed(selectedCreation.id); await loadPage(); for (const t of result.takes || []) watchTake(t.id); toast("Failed takes queued for retry."); } catch (e) { toast(e.message, "err"); }
+  } }, "RETRY FAILED");
+  const generateMissingButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; try { const result = await createApi.generateMissing(selectedCreation.id); await loadPage(); for (const t of result.takes || []) watchTake(t.id); toast("Missing variations queued."); } catch (e) { toast(e.message, "err"); }
+  } }, "GENERATE MISSING");
+
+  const renameButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; const next = window.prompt("Creation name", selectedCreation.name); if (next == null || !next.trim()) return;
+    try { await createApi.update(selectedCreation.id, { name: next }); await loadPage(); } catch (e) { toast(e.message, "err"); }
+  } }, "RENAME");
+  const duplicateButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; try { const copy = await createApi.duplicate(selectedCreation.id); await loadPage(); selectedCreation = await createApi.creation(copy.id); drawCards(); drawGrid(); toast("Separate creation record made; no audio duplicated."); } catch (e) { toast(e.message, "err"); }
+  } }, "DUPLICATE");
+  const archiveButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; try { await createApi.update(selectedCreation.id, { archived: !selectedCreation.archived }); await loadPage(); } catch (e) { toast(e.message, "err"); }
+  } }, "ARCHIVE / RESTORE");
+  const deleteButton = h("button", { class: "btn tiny danger", onclick: async () => {
+    if (!selectedCreation || !confirm(`Delete creation metadata for ${selectedCreation.name}? Audio files will be retained on disk.`)) return;
+    try { await createApi.remove(selectedCreation.id); await loadPage(); }
+    catch (e) { toast(e.message, "err"); return; }
+    if (confirm("Permanently delete this creation's WAV and project files too?")) {
+      try { await createApi.remove(selectedCreation.id); toast("Creation and its generated files deleted."); }
+      catch (e) { toast(e.message, "err"); }
+    } else toast("Creation metadata deleted; audio files retained on disk.");
+    await loadPage();
+  } }, "DELETE CREATION…");
+  tags.addEventListener("change", async () => {
+    if (!selectedCreation) return;
+    try { await createApi.update(selectedCreation.id, { tags: tags.value.split(",").map((x) => x.trim().replace(/^#/, "")).filter(Boolean) }); await loadPage(); }
+    catch (e) { toast(e.message, "err"); }
+  });
+  const openButton = h("button", { class: "btn tiny", onclick: async () => {
+    if (!selectedCreation) return; try { selectedCreation = await createApi.creation(selectedCreation.id); applyParams(selectedCreation.params); notes.value = selectedCreation.notes || ""; tags.value = (selectedCreation.tags || []).join(", "); drawGrid(); } catch (e) { toast(e.message, "err"); }
+  } }, "OPEN");
+  const pageBack = h("button", { class: "btn tiny", onclick: () => { page = Math.max(1,page-1); loadPage(); } }, "← PAGE");
+  const pageNext = h("button", { class: "btn tiny", onclick: () => { if (page < (response.pages || 1)) page++; loadPage(); } }, "PAGE →");
+  refreshPresetOptions(); updateRemoteControls(); drawCards(); drawGrid();
+  if (selectedCreation) { notes.value = selectedCreation.notes || ""; tags.value = (selectedCreation.tags || []).join(", "); }
+  const host = h("div", { class: "create-screen" },
+    h("section", { class: "create-hero" }, h("div", { class: "create-kicker mono" }, h("i"), " NULL SECTOR STUDIO · MUSIC LAB 2.0"),
+      h("div", { class: "create-hero-row" }, h("div", {}, h("h1", {}, "Experiment.\nKeep the signal."), h("p", {}, "Local generation stays the default. YuE2 and ACE-Step are opt-in remote engines."))),
+      h("div", { class: "engine-status" }, h("span", {}, "LOCAL PROCEDURAL · READY"), h("span", {}, config.stable_audio_ready ? "STABLE AUDIO 3 · CONFIGURED" : "STABLE AUDIO 3 · UNAVAILABLE"), h("span", {}, config.yue2_ready ? "YuE2 · READY · NONCOMMERCIAL" : "YuE2 · UNAVAILABLE"), h("span", {}, config.acestep_ready ? "ACE-STEP · READY" : "ACE-STEP · UNAVAILABLE"))),
+    h("div", { class: "create-workspace" },
+      h("div", { class: "create-main-column" },
+        panel("01 — GENERATION PARAMETERS", h("div", { class: "create-fields" },
+          h("label", { class: "wide" }, h("span", { class: "create-label" }, "CREATION NAME · OPTIONAL"), name),
+          h("label", { class: "wide" }, h("span", { class: "create-label" }, "PROMPT"), prompt),
+          h("label", {}, h("span", { class: "create-label" }, "ENGINE"), engine), h("label", {}, h("span", { class: "create-label" }, "GENRE"), genre),
+          h("label", {}, h("span", { class: "create-label" }, "MOOD"), mood), h("label", {}, h("span", { class: "create-label" }, "BPM"), bpm),
+          h("label", {}, h("span", { class: "create-label" }, "KEY"), key), eraControl, durationControl, lyricsControl,
+          barsControl, authenticityControl, sampleBlendControl, sampleLibraryControl,
+          h("label", {}, h("span", { class: "create-label" }, "REPRODUCIBLE SEED"), seed), h("label", {}, h("span", { class: "create-label" }, "BATCH SIZE"), count),
+          h("label", {}, h("span", { class: "create-label" }, "SEED EXPERIMENT"), seedMode), h("label", {}, h("span", { class: "create-label" }, "TAGS"), tags))),
+        h("div", { class: "row create-tools" }, presetBox, savePresetButton, h("button", { class: "btn tiny", onclick: async () => { const p = presets.find((x)=>x.id===presetBox.value); if (!p) return; if (!confirm(`Delete preset ${p.name}?`)) return; try { await createApi.deletePreset(p.id); presets = presets.filter((x)=>x.id!==p.id); refreshPresetOptions(); } catch(e) { toast(e.message,"err"); } } }, "DELETE PRESET"), status, createButton),
+        panel("CREATION HISTORY · SEARCH / ORGANIZE", queryBox, h("div", { class: "filters" }, filterBox, openButton, renameButton, duplicateButton, archiveButton, deleteButton),
+          h("div", { class: "row" }, pageBack, pageLabel, pageNext), history),
+        panel("TAKE GRID · PREVIEW / FAVORITE / REUSE", batchStatus, h("div", { class: "filters" }, h("label", { class: "mono faint" }, "WAVEFORM DETAIL", h("select", { class: "create-select", onchange: (e) => { waveBins = Number(e.target.value); waveformCache.clear(); drawGrid(); } }, ...[[160,"ZOOM OUT"],[400,"STANDARD"],[1200,"ZOOM IN"]].map(([v,label]) => h("option", { value: v, selected: v === waveBins }, label)))), retryFailedButton, generateMissingButton), grid),
+        panel("A/B LAB · NO AUTOMATIC WINNER", comparePanel)),
+      h("aside", { class: "create-side-column" }, panel("SELECTED CREATION", h("div", { class: "mono faint" }, "Persisted notes and tags; notes never modify synthesis."), notes), panel("GENERATION PRESETS", presetBoxAside, savePresetButton))));
+  loadLibrarySamples();
+  for (const c of creations) for (const t of c.takes) if (["queued","running"].includes(t.status)) watchTake(t.id);
+  return host;
 }
 
 /* ====================================================== 01 OVERVIEW ==== */
@@ -925,7 +1627,7 @@ async function screenSampleLibrary() {
       const status = await libraryApi.scanStatus();
       app.libraryScan = status;
       drawScan();
-      if (["COMPLETE", "ERROR"].includes(status.state)) {
+      if (["COMPLETE", "CANCELLED", "ERROR"].includes(status.state)) {
         clearInterval(scanTimer);
         refreshRoots();
         runSearch();
@@ -1032,17 +1734,43 @@ async function screenSampleLibrary() {
   function drawScan() {
     const s = app.libraryScan;
     scanBox.innerHTML = "";
-    if (!s || !["SCANNING","ANALYZING","COMPLETE","ERROR"].includes(s.state)) return;
+    if (!s || !["SCANNING","ANALYZING","FINALIZING","COMPLETE","CANCELLED","ERROR"].includes(s.state)) return;
+    const discovering = s.state === "SCANNING";
+    const active = ["SCANNING", "ANALYZING"].includes(s.state);
     const pct = Math.round((s.progress || 0) * 100);
-    scanBox.append(h("div", { class: `mono ${s.state === "ERROR" ? "red" : "cyan"}` },
-      `${s.state} · ${pct}% · ${s.analyzed || 0} analyzed · ${s.failed || 0} failed`),
-      h("div", { class: "lib-progress" }, h("i", { style: `width:${pct}%` })),
+    const currentPath = s.current_file || s.current_path || (discovering ? s.root : "");
+    const rows = [
+      h("div", { class: `mono ${s.state === "ERROR" ? "red" : "cyan"}` },
+        discovering
+          ? `SCANNING · discovering · ${s.discovered || 0} found`
+          : s.state === "ANALYZING"
+            ? `${s.state} · ${pct}% · ${s.analyzed || 0} analyzed · ${s.failed || 0} failed`
+            : s.state === "FINALIZING"
+            ? "FINALIZING INDEX · removing stale entries"
+            : s.state === "CANCELLED"
+              ? `CANCELLED · ${s.analyzed || 0} analyzed before cancellation`
+              : `${s.state} · ${s.analyzed || 0} analyzed · ${s.failed || 0} failed`),
+      h("div", { class: `lib-progress${discovering ? " indeterminate" : ""}` },
+        h("i", { style: discovering ? undefined : `width:${pct}%` })),
       h("div", { class: "mono faint" },
         `${s.discovered || 0} discovered · ${s.changed || 0} changed · ${s.unchanged || 0} unchanged · ${s.deleted || 0} deleted`),
-      s.current_file ? h("div", { class: "mono faint lib-current" }, s.current_file) : null,
+      currentPath ? h("div", { class: "mono faint lib-current" }, currentPath) : null,
       s.error ? h("div", { class: "mono red" }, s.error) : null,
-      ["SCANNING","ANALYZING"].includes(s.state)
-        ? h("div", { class: "mono faint" }, "Analysis runs in a background worker; cancellation is not available") : null);
+      active
+        ? h("div", { class: "row", style: "align-items:center;justify-content:space-between" },
+          h("div", { class: "mono faint" }, s.cancellation_requested
+            ? "Cancellation requested; waiting for the current operation to finish…"
+            : discovering ? "Discovering audio files; progress is indeterminate"
+              : "Analysis runs in a background worker"),
+          h("button", { class: "btn tiny", disabled: !!s.cancellation_requested,
+            onclick: async (e) => {
+              const button = e.currentTarget;
+              button.disabled = true;
+              try { app.libraryScan = await libraryApi.cancelScan(); drawScan(); }
+              catch (err) { button.disabled = false; toast(`cancel failed: ${err.message}`, "err"); }
+            } }, s.cancellation_requested ? "STOPPING…" : "CANCEL SCAN")) : null,
+    ];
+    scanBox.append(...rows.filter(Boolean));
   }
   async function runSearch() {
     const req = ++searchRequest;
@@ -1171,7 +1899,7 @@ async function screenSampleLibrary() {
   try {
     const existingScan = await libraryApi.scanStatus();
     app.libraryScan = existingScan;
-    if (["SCANNING", "ANALYZING"].includes(existingScan.state)) drawScan();
+    if (["SCANNING", "ANALYZING", "FINALIZING", "CANCELLED", "ERROR"].includes(existingScan.state)) drawScan();
   } catch {}
   if (app.selectedSample) {
     try {
@@ -2099,7 +2827,7 @@ async function boot() {
   setInterval(refreshHealth, 2500);
   setInterval(() => con.poll(), 1200);
   con.poll();
-  showScreen("overview");
+  showScreen("create");
 }
 
 boot();

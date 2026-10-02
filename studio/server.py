@@ -1,10 +1,10 @@
-"""TIMBOR Album Studio — local web interface server.
+"""TIMBOR Music Studio — local web interface and track creation API.
 
 Serves the studio frontend (``studio/www``) and a JSON API over the
 existing TIMBOR album engine (phase 5/6). The Python engine stays
-authoritative: this server only reads project documents, streams audio,
-extracts waveform peaks, writes sequencing/loudness *configuration* into
-album.json, and runs ``generate.py`` operations as background jobs.
+authoritative: this server reads project documents, streams audio,
+extracts waveform peaks, writes sequencing/loudness configuration, and
+runs ``generate.py`` operations as background jobs.
 
 stdlib only (http.server; no web frameworks, no scipy).
 
@@ -18,12 +18,14 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import math
 import os
 import re
 import struct
 import subprocess
 import sys
 import threading
+import uuid
 import time
 import urllib.parse
 from collections import deque
@@ -39,13 +41,36 @@ os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 import numpy as np  # noqa: E402  (engine dependency, already required)
 
+from timbor import GENRES  # noqa: E402
 from timbor.album.serialization import load_album, save_album  # noqa: E402
 from timbor.album.sequencing import SequenceConfig, wav_info  # noqa: E402
 from timbor.album import release as release_mod  # noqa: E402
 from studio.sample_library import SampleLibraryService  # noqa: E402
+from studio.creation_store import CreationStore  # noqa: E402
 
 WWW_DIR = os.path.join(ROOT, "studio", "www")
 BUILD = "studio-1.3"
+
+# Built-ins use only fields supported by the existing generation form/engine.
+BUILTIN_PRESETS = [
+    {"id": "builtin-1994-rave", "name": "1994 RAVE", "params": {"genre": "rave", "authenticity": "authentic"}},
+    {"id": "builtin-gabber", "name": "GABBER", "params": {"genre": "gabber"}},
+    {"id": "builtin-jungle", "name": "JUNGLE", "params": {"genre": "jungle"}},
+    {"id": "builtin-frenchcore", "name": "FRENCHCORE", "params": {"genre": "frenchcore"}},
+    {"id": "builtin-hardcore", "name": "HARDCORE", "params": {"genre": "gabber", "authenticity": "authentic"}},
+    {"id": "builtin-uk-hardcore", "name": "UK HARDCORE", "params": {"genre": "uk_hardcore"}},
+    {"id": "builtin-freeform", "name": "FREEFORM", "params": {"genre": "freeform"}},
+    {"id": "builtin-hard-house", "name": "HARD HOUSE", "params": {"genre": "hard_house"}},
+    {"id": "builtin-trance", "name": "TRANCE", "params": {"genre": "trance"}},
+]
+
+
+def creation_presets() -> list[dict]:
+    saved = creation_store.list_presets()
+    saved_names = {preset["name"].casefold() for preset in saved}
+    return [preset for preset in BUILTIN_PRESETS if preset["name"].casefold() not in saved_names] + saved
+
+
 
 # ---------------------------------------------------------------------------
 # document cache (mtime-keyed) + derived-state caches
@@ -262,6 +287,35 @@ def extract_peaks(path: str, bins: int) -> dict:
     return out
 
 
+def analyze_creation_wav(path: str) -> dict:
+    """Measured WAV facts only; no estimated LUFS or true-peak claims."""
+    info = parse_wav(path)
+    mono, rate = read_wav_mono(path)
+    if not mono.size:
+        raise ValueError("generated WAV contains no samples")
+    samples = mono.astype(np.float64)
+    if not np.isfinite(samples).all():
+        raise ValueError("WAV contains NaN or infinite samples")
+    rms = float(np.sqrt(np.mean(samples * samples)))
+    peak = float(np.max(np.abs(samples)))
+    if peak < 1e-4 or rms < 1e-5:
+        raise ValueError("WAV is silent or near-silent")
+    clipped = float(np.mean(np.abs(samples) >= 0.999))
+    silence = np.abs(samples) < 1e-4
+    first = next((i for i, value in enumerate(silence) if not value), len(silence))
+    last = next((i for i, value in enumerate(silence[::-1]) if not value), len(silence))
+    return {                "duration_seconds": round(info["frames"] / rate, 4),
+            "sample_rate": rate, "channels": info["channels"], "bit_depth": info["bits"],
+            "file_size_bytes": os.path.getsize(path),
+
+            "peak": round(peak, 8), "peak_dbfs": round(20 * math.log10(max(peak, 1e-12)), 3),
+            "rms": round(rms, 8), "rms_dbfs": round(20 * math.log10(max(rms, 1e-12)), 3),
+            "clipped_fraction": round(clipped, 8), "clipping": clipped > 0,
+            "silence_start_seconds": round(first / rate, 4),
+            "silence_end_seconds": round(last / rate, 4),
+            "lufs": None, "true_peak_dbfs": None}
+
+
 # ---------------------------------------------------------------------------
 # studio state: paths, derived health
 # ---------------------------------------------------------------------------
@@ -294,6 +348,7 @@ ALBUM_DIR = detect_album_dir()
 ALBUM_REL = os.path.relpath(ALBUM_DIR, ROOT).replace(os.sep, "/")
 sample_library = SampleLibraryService(ROOT)
 sample_library.peaks_fn = extract_peaks
+creation_store = CreationStore(os.path.join(ROOT, "data", "studio_creations.db"))
 
 MD5_CACHE: dict[str, tuple[float, int, str]] = {}
 
@@ -936,6 +991,7 @@ class JobRunner:
         self._queue: "deque[dict]" = deque()
         self._current: dict | None = None
         self._counter = 0
+        self.create_jobs: dict[str, dict] = {}
         self.logs: deque = deque(maxlen=4000)
         self._log_seq = 0
         self._wake = threading.Event()
@@ -960,6 +1016,10 @@ class JobRunner:
         if kind not in JOB_DEFS:
             raise KeyError(kind)
         with self._lock:
+            if self._current or self._queue or any(
+                    item["status"] in {"queued", "running"}
+                    for item in self.create_jobs.values()):
+                raise RuntimeError("another generation or album operation is already running")
             self._counter += 1
             job = {
                 "id": f"job-{self._counter}",
@@ -981,6 +1041,501 @@ class JobRunner:
         self.log(queued_note)
         return job
 
+    def submit_creation(self, request: dict) -> dict:
+        """Queue a standalone or batched track generation operation."""
+        prompt = str(request.get("prompt", "")).strip()
+        genre = str(request.get("genre", "")).strip()
+        key = str(request.get("key", "")).strip()
+        if len(key) > 40:
+            raise ValueError("musical key must be at most 40 characters")
+        if not prompt and not genre:
+            raise ValueError("provide a prompt or genre")
+        if prompt and not 3 <= len(prompt) <= 1000:
+            raise ValueError("prompt must be between 3 and 1000 characters")
+        if genre and genre not in GENRES:
+            raise ValueError(f"unsupported genre {genre!r}")
+        engine = request.get("engine", "timbor")
+        if engine == "procedural":
+            engine = "timbor"
+        if engine not in {"timbor", "yue2", "acestep", "procedural", "stable-audio"}:
+            raise ValueError("engine must be timbor, yue2, acestep, procedural, or stable-audio")
+        stable_config = None
+        if engine == "stable-audio":
+            from timbor.stable_audio import StableAudioConfig, StableAudioError
+            config = StableAudioConfig.from_env()
+            try:
+                config.validate()
+            except StableAudioError as exc:
+                raise ValueError(str(exc)) from exc
+            if not config.enabled:
+                raise ValueError("Stable Audio is disabled; set STABLE_AUDIO_ENABLED=true")
+            if not config.api_key or not config.modal_url:
+                raise ValueError("Stable Audio Modal URL and API key are required")
+        elif engine in {"yue2", "acestep"}:
+            if engine == "yue2":
+                from timbor.yue_engine import EngineConfig, YueEngineError
+                engine_label = "YuE2"
+                enabled_var = "YUE2_ENABLED"
+            else:
+                from timbor.ace_step_engine import EngineConfig, AceStepEngineError
+                engine_label = "ACE-Step"
+                enabled_var = "ACESTEP_ENABLED"
+            config = EngineConfig.from_env()
+            try:
+                config.validate()
+            except Exception as exc:
+                raise ValueError(str(exc)) from exc
+            if not config.enabled:
+                raise ValueError(f"{engine_label} is disabled; set {enabled_var}=true")
+        sample_library_id = str(request.get("sample_library", "") or "")
+        sample_library_root = None
+        if engine == "timbor" and sample_library_id:
+            try:
+                sample_library_root = sample_library._root(sample_library_id)["path"]
+            except KeyError as exc:
+                raise ValueError("choose a registered sample library") from exc
+        elif engine in {"stable-audio", "yue2", "acestep"}:
+            sample_library_id = ""
+            request["selected_samples"] = []
+        bpm_raw = request.get("bpm")
+        try:
+            bpm = None if bpm_raw in (None, "") else float(bpm_raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("BPM must be a number between 40 and 300") from exc
+        if bpm is not None and (not math.isfinite(bpm) or not 40 <= bpm <= 300):
+            raise ValueError("BPM must be a number between 40 and 300")
+        bars_raw = request.get("bars", 32)
+        try:
+            bars = int(bars_raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("arrangement length must be 16, 32, 48, 64, 96, or 128 bars") from exc
+        if bars not in {16, 32, 48, 64, 96, 128}:
+            raise ValueError("arrangement length must be 16, 32, 48, 64, 96, or 128 bars")
+        duration_raw = request.get("duration")
+        if duration_raw in (None, ""):
+            duration_raw = config.default_duration if engine in {
+                "stable-audio", "yue2", "acestep"} else 30
+        try:
+            duration = float(duration_raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("duration must be a finite number of seconds") from exc
+        if not math.isfinite(duration):
+            raise ValueError("duration must be a finite number of seconds")
+        seed_raw = request.get("seed")
+        if seed_raw in (None, ""):
+            seed = None
+        else:
+            try:
+                seed = int(seed_raw)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("seed must be an integer from 0 to 4294967295") from exc
+            if isinstance(seed_raw, bool) or not 0 <= seed < 2**32:
+                raise ValueError("seed must be an integer from 0 to 4294967295")
+        sample_mode = str(request.get("sample_mode", "balanced"))
+        if sample_mode not in {"off", "subtle", "balanced", "heavy"}:
+            raise ValueError("invalid sample mode")
+        mood = request.get("mood") or None
+        if mood not in (None, "dark", "euphoric", "fun", "cinematic"):
+            raise ValueError("invalid mood")
+        authenticity = request.get("authenticity", "hybrid")
+        if authenticity not in {"authentic", "modern", "hybrid", "experimental"}:
+            raise ValueError("invalid authenticity")
+        era = str(request.get("era", "")).strip()
+        lyrics = str(request.get("lyrics", "")).strip()
+        if len(era) > 80:
+            raise ValueError("era must be at most 80 characters")
+        if len(lyrics) > 4096:
+            raise ValueError("lyrics must be at most 4096 characters")
+        if engine == "stable-audio":
+            stable_config = StableAudioConfig.from_env()
+            max_remote_duration = stable_config.max_duration
+            if not 1 <= duration <= max_remote_duration:
+                raise ValueError(f"Stable Audio duration must be between 1 and {max_remote_duration:g} seconds")
+        if engine in {"yue2", "acestep"}:
+            caption = prompt or genre
+            context_parts = [caption]
+            if genre:
+                context_parts.append(f"{era + ' ' if era else ''}{genre} music")
+            elif era:
+                context_parts.append(f"{era} era")
+            if bpm is not None:
+                context_parts.append(f"{bpm:g} BPM")
+            if key:
+                context_parts.append(f"in {key}")
+            if mood:
+                context_parts.append(f"{mood} mood")
+            if len(". ".join(context_parts) + ".") > 512:
+                label = "YuE2 style prompt" if engine == "yue2" else "ACE-Step caption"
+                raise ValueError(f"{label} including music context must be at most 512 characters")
+        if engine == "stable-audio":
+            if not stable_config.enabled or not stable_config.modal_url or not stable_config.api_key:
+                raise ValueError("Stable Audio URL/key and STABLE_AUDIO_ENABLED=true are required")
+            config = stable_config
+            engine_label = "Stable Audio"
+        if engine in {"yue2", "acestep"}:
+            minimum = 10 if engine == "acestep" else 1
+            if not minimum <= duration <= config.max_duration:
+                raise ValueError(f"{engine_label} duration must be {minimum}..{config.max_duration:g} seconds")
+        retry_seeds = request.get("_retry_seeds")
+        if retry_seeds is not None:
+            if (not isinstance(retry_seeds, list) or len(retry_seeds) not in {1, 2, 4, 8, 16}
+                    or any(seed_value is not None and
+                           (isinstance(seed_value, bool) or not isinstance(seed_value, int)
+                            or not 0 <= seed_value < 2**32)
+                           for seed_value in retry_seeds)):
+                raise ValueError("internal retry seed list is invalid")
+            take_count = len(retry_seeds)
+        else:
+            take_count = request.get("takes", 1)
+            try:
+                take_count = int(take_count)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("take count must be 1, 2, 4, 8, or 16") from exc
+            if take_count not in {1, 2, 4, 8, 16}:
+                raise ValueError("take count must be 1, 2, 4, 8, or 16")
+        if engine in {"stable-audio", "yue2", "acestep"} and take_count != 1:
+            raise ValueError("remote engines accept one take per request to prevent unexpected inference charges")
+        seed_mode = request.get("seed_mode", "vary")
+        # Internal retries preserve each failed take's exact seed while using
+        # the same serial batch worker as normal generation.
+        if retry_seeds is not None:
+            seed = retry_seeds[0]
+            seed_mode = "same"
+        if seed_mode not in {"vary", "same"}:
+            raise ValueError("seed_mode must be vary or same")
+        selected_samples = request.get("selected_samples", [])
+        if (not isinstance(selected_samples, list) or len(selected_samples) > 500
+                or any(not isinstance(item, str) or len(item) > 512 for item in selected_samples)):
+            raise ValueError("selected_samples must be a list of at most 500 sample IDs")
+        params = {"prompt": prompt or genre, "genre": genre, "mood": mood,
+                  "bpm": bpm, "key": key, "bars": bars, "duration": duration,
+                  "seed": (request.get("seed") if retry_seeds is not None else seed),
+                  "seed_mode": seed_mode, "sample_library": sample_library_id,
+                  "selected_samples": selected_samples,
+                  "sample_mode": sample_mode, "engine": engine, "authenticity": authenticity,
+                  "era": era, "lyrics": lyrics}
+        requested_creation_id = str(request.get("creation_id") or "")
+        existing_creation = None
+        if requested_creation_id:
+            if not re.fullmatch(r"[a-f0-9]{32}", requested_creation_id):
+                raise ValueError("invalid creation id")
+            existing_creation = creation_store.get_creation(requested_creation_id)
+            if existing_creation.get("archived"):
+                raise ValueError("cannot add takes to an archived creation")
+            if retry_seeds is not None:
+                original = existing_creation["params"]
+                if any(original.get(field) != value for field, value in {
+                    "genre": genre, "mood": mood, "bpm": bpm, "key": key,
+                    "bars": bars, "duration": duration, "sample_library": sample_library_id,
+                    "sample_mode": sample_mode, "engine": engine,
+                    "authenticity": authenticity, "era": era,
+                    "selected_samples": selected_samples, "lyrics": lyrics}.items()):
+                    raise ValueError("retry parameters must match the original creation")
+                if any(take.get("prompt") != prompt for take in existing_creation["takes"]
+                       if take.get("status") in {"error", "queued", "running"}):
+                    raise ValueError("retry prompt must match failed takes")
+            elif any(existing_creation["params"].get(field) != value for field, value in {
+                    "prompt": prompt or genre, "genre": genre, "mood": mood, "bpm": bpm,
+                    "key": key, "bars": bars, "duration": duration, "seed_mode": seed_mode,
+                    "sample_library": sample_library_id, "selected_samples": selected_samples,
+                    "sample_mode": sample_mode, "engine": engine,
+                    "authenticity": authenticity, "era": era, "lyrics": lyrics}.items()):
+                raise ValueError("retry parameters must match the original creation")
+            creation_id = requested_creation_id
+            take_offset = max((take.get("take_number", 0) for take in existing_creation["takes"]), default=0)
+        else:
+            creation_id = uuid.uuid4().hex
+            take_offset = 0
+        display_bpm = f"{bpm:g} BPM" if bpm is not None else "AUTO BPM"
+        display_key = key or "AUTO KEY"
+        auto_name = f"{(genre or prompt or 'Music').replace('_', ' ').title()} — {display_bpm} — {display_key}"
+        creation_name = str(request.get("name") or
+                            (existing_creation["name"] if existing_creation else auto_name))[:120]
+        prepared = []
+        used_seeds = set()
+        for batch_number in range(1, take_count + 1):
+
+            take_number = take_offset + batch_number
+            take_id = uuid.uuid4().hex
+            if retry_seeds is not None:
+                take_seed = retry_seeds[batch_number - 1]
+                if take_seed is None:
+                    import secrets
+                    take_seed = secrets.randbelow(2**32)
+            elif seed is None:
+                import secrets
+                take_seed = None
+                while take_seed is None or take_seed in used_seeds:
+                    take_seed = secrets.randbelow(2**32)
+            elif seed_mode == "same":
+                take_seed = seed
+            else:
+                take_seed = (seed + take_number - 1) % 2**32
+            used_seeds.add(take_seed)
+            output = os.path.join(ROOT, "projects", "created", f"creation_{creation_id}",
+                                  f"take_{take_number:02d}_{take_id[:8]}", "audio", "master.wav")
+            command = [sys.executable, os.path.join(ROOT, "generate.py"), prompt or genre]
+            take_engine_seed = take_seed
+            if engine == "stable-audio":
+                command.extend(("--stable-audio", "--stable-audio-mode", "text-to-audio",
+                                "--duration", str(duration)))
+            elif engine in {"yue2", "acestep"}:
+                command.extend(("--engine", engine, "--duration", str(duration)))
+                if request.get("lyrics"):
+                    command.extend(("--lyrics", str(request["lyrics"])))
+            else:
+                command.extend(("--bars", str(bars), "--sample-mode", sample_mode,
+                                "--authenticity", authenticity, "--stems"))
+            command.extend(("-o", output))
+            if genre:
+                command.extend(("--genre", genre))
+            if sample_library_root:
+                command.extend(("--sample-dir", sample_library_root))
+            if bpm is not None:
+                command.extend(("--bpm", str(bpm)))
+            if key:
+                command.extend(("--key", key))
+            if take_engine_seed is not None:
+                command.extend(("--seed", str(take_engine_seed)))
+            if mood:
+                command.extend(("--mood", mood))
+            if era and engine in {"stable-audio", "yue2", "acestep"}:
+                command.extend(("--era", era))
+            if engine == "stable-audio":
+                command.extend(("--stable-audio-model", "small-music"))
+            provider_name = {"stable-audio": "Stable Audio 3", "yue2": "YuE2",
+                             "acestep": "ACE-Step 1.5"}.get(engine, "TIMBOR Procedural")
+            take = {"id": take_id, "kind": "create_track", "label": f"TAKE {take_number:02d}",
+                    "status": "queued", "engine": engine, "provider": provider_name,
+                    "name": f"TAKE {take_number:02d}", "prompt": prompt or genre, "genre": genre, "mood": mood, "bpm": bpm,
+                    "key": key, "duration_requested": duration, "bars": bars,
+                    "sample_library": sample_library_id, "sample_mode": sample_mode,
+                    "authenticity": authenticity, "era": era, "seed": take_engine_seed,
+                    "seed_mode": seed_mode, "take_number": take_number,
+                    "creation_id": creation_id, "created_at": time.time(),
+                    "output": output,
+                    "output_rel": os.path.relpath(output, ROOT).replace(os.sep, "/"),
+                    "audio_url": None, "error": None, "started": None,
+                    "ended": None, "duration_seconds": None, "validation_status": "pending",
+                    "favorite": False, "notes": "", "sample_usage": None, "analysis": None,
+                    "recipe": {"application_version": BUILD, "engine": engine,
+                               "provider": provider_name,
+                               **params, "lyrics": request.get("lyrics", ""),
+                               "seed": take_engine_seed, "generated_at": None}}
+            prepared.append((take, command))
+        with self._lock:
+            if self._current or self._queue or any(
+                    item["status"] in {"queued", "running"}
+                    for item in self.create_jobs.values()):
+                raise RuntimeError("another generation or album operation is already running")
+            self._counter += 1
+            if sample_library_root and sample_mode != "off":
+                from timbor.samples.cache import SampleIndex
+                index = SampleIndex(sample_library.db_path)
+                try:
+                    ready_samples = index.conn.execute(
+                        "SELECT COUNT(*) FROM samples WHERE analyzed=1 AND error='' "
+                        "AND lower(path) LIKE lower(?)", (sample_library_root.rstrip(os.sep) + os.sep + "%",)
+                    ).fetchone()[0]
+                finally:
+                    index.close()
+                if not ready_samples:
+                    raise ValueError("selected sample library has no analyzed samples; scan it first or turn sample blend off")
+            if existing_creation:
+                creation_store.update_creation(creation_id, {"status": "running"})
+            else:
+                creation_store.create(params, creation_name, request.get("tags", []),
+                                      request.get("notes", ""), status="queued", creation_id=creation_id)
+            for take, _command in prepared:
+                creation_store.add_take(creation_id, take, take["take_number"])
+                self.create_jobs[take["id"]] = take
+            if len(self.create_jobs) > 200:
+                completed = sorted((item for item in self.create_jobs.values()
+                                    if item["status"] not in {"queued", "running"}),
+                                   key=lambda item: item.get("ended") or 0)
+                for old in completed[:max(0, len(self.create_jobs) - 200)]:
+                    self.create_jobs.pop(old["id"], None)
+        self.log(f"queued {take_count} {engine} take(s) in creation {creation_id}")
+        target = self._run_creation if take_count == 1 else self._run_creation_batch
+        args = (prepared[0][0]["id"], prepared[0][1]) if take_count == 1 else (creation_id, prepared)
+        thread_name = f"timbor-create-{prepared[0][0]['id'][:8]}" if take_count == 1 else f"timbor-batch-{creation_id[:8]}"
+        threading.Thread(target=target, args=args, daemon=True, name=thread_name).start()
+        result = self.creation_job(prepared[0][0]["id"])
+        result.update({"creation_id": creation_id, "take_count": take_count,
+                       "takes": [self.creation_job(take["id"]) for take, _ in prepared]})
+        return result
+
+    def retry_creation_batch(self, creation_id: str, failed_only: bool = True,
+                             take_ids: list[str] | None = None) -> dict:
+        """Queue eligible takes together, preserving each original recipe and seed."""
+        creation = creation_store.get_creation(creation_id)
+        eligible = [take for take in creation["takes"]
+                    if ((take.get("id") in take_ids and take.get("status") == "error")
+                        if take_ids is not None else
+                        (take.get("status") == "error" if failed_only
+                         else take.get("status") != "done"))]
+        if not eligible:
+            raise ValueError("no takes are eligible for this action")
+        first = eligible[0]
+        request = {**(first.get("recipe") or {}),
+            "engine": first.get("engine"), "prompt": first.get("prompt"),
+            "genre": first.get("genre"), "mood": first.get("mood"),
+            "bpm": first.get("bpm"), "key": first.get("key"),
+            "seed": first.get("seed"), "bars": first.get("bars"),
+            "duration": first.get("duration_requested"),
+            "sample_library": first.get("sample_library"),
+            "selected_samples": creation["params"].get("selected_samples", []),
+            "sample_mode": first.get("sample_mode"),
+            "authenticity": first.get("authenticity"), "era": first.get("era"),
+            "takes": 1, "seed_mode": "same", "creation_id": creation_id,
+            "_retry_seeds": [take.get("seed") for take in eligible]}
+        with self._lock:
+            if (self._current or self._queue or any(
+                    item.get("status") in {"queued", "running"}
+                    for item in self.create_jobs.values())):
+                raise RuntimeError("another generation is already running")
+        return self.submit_creation(request)
+
+    def _run_creation_batch(self, creation_id: str, prepared: list[tuple[dict, list[str]]]) -> None:
+        """Run a batch serially to respect local memory and paid-provider limits."""
+        for take, command in prepared:
+            self._run_creation(take["id"], command)
+        takes = creation_store.list_takes(creation_id)
+        statuses = [take.get("status") for take in takes]
+        creation_store.update_creation(creation_id, {
+            "status": "error" if "error" in statuses else "done"})
+
+    def _run_creation(self, job_id: str, command: list[str]) -> None:
+        with self._lock:
+            job = self.create_jobs.get(job_id)
+            if not job:
+                return
+            job["status"] = "running"
+            job["started"] = time.time()
+            job["generated_at"] = job["started"]
+            job["validation_status"] = "pending"
+            engine_name = job.get("engine", "procedural")
+            creation_store.update_take(job_id, {"status": "running", "started": job["started"],
+                                                "generated_at": job["generated_at"]})
+        self.log(f"started {engine_name} creation {job_id}")
+        try:
+            env = dict(os.environ, OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1",
+                       MKL_NUM_THREADS="1")
+            proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+                                  encoding="utf-8", errors="replace", timeout=1800,
+                                  env=env)
+            for line in (proc.stdout or "").splitlines():
+                self.log(line, src="engine")
+            for line in (proc.stderr or "").splitlines():
+                self.log(line, src="engine:error")
+            with self._lock:
+                output = self.create_jobs[job_id]["output"]
+            ok = proc.returncode == 0 and os.path.isfile(output)
+            duration = None
+            analysis = None
+            sample_usage = None
+            detail = next((line.strip() for line in reversed(
+                (proc.stderr or "").splitlines() + (proc.stdout or "").splitlines())
+                if line.strip()), "generation failed — see system log")
+            if ok:
+                try:
+                    analysis = analyze_creation_wav(output)
+                    duration = analysis["duration_seconds"]
+                    if engine_name == "procedural":
+                        project = os.path.join(os.path.dirname(os.path.dirname(output)), "project.json")
+                        if os.path.isfile(project):
+                            with open(project, "r", encoding="utf-8") as project_file:
+                                document = json.load(project_file)
+                            refs = {item.get("id"): item for item in document.get("samples", [])}
+                            used = {}
+                            for event in document.get("timeline", []):
+                                ref = refs.get(event.get("sample_id"))
+                                if ref:
+                                    used[ref.get("filename") or os.path.basename(ref.get("path", ""))] = used.get(ref.get("filename") or os.path.basename(ref.get("path", "")), 0) + 1
+                            sample_usage = {"available": True, "samples": [{"filename": name, "placements": count} for name, count in sorted(used.items())]}
+                        else:
+                            sample_usage = {"available": False, "samples": []}
+                    else:
+                        sample_usage = {"available": False, "samples": []}
+                except (OSError, ValueError, KeyError, TypeError) as exc:
+                    ok = False
+                    detail = f"generated WAV failed validation: {exc}"
+                sidecar = output + ".json"
+                project = os.path.join(os.path.dirname(os.path.dirname(output)), "project.json")
+                try:
+                    if os.path.isfile(sidecar):
+                        with open(sidecar, "r", encoding="utf-8") as metadata_file:
+                            metadata = json.load(metadata_file)
+                        job["seed"] = metadata.get("seed", job["seed"])
+                    elif os.path.isfile(project):
+                        with open(project, "r", encoding="utf-8") as project_file:
+                            document = json.load(project_file)
+                        job["seed"] = (document.get("generator") or {}).get(
+                            "seed", job["seed"])
+                except (OSError, ValueError):
+                    pass
+            with self._lock:
+                job["status"] = "done" if ok else "error"
+                job["error"] = None if ok else detail[-500:]
+                job["duration_seconds"] = duration
+                job["analysis"] = analysis if ok else None
+                job["sample_usage"] = sample_usage if ok else None
+                job["validation_status"] = "passed" if ok else "failed"
+                job["audio_url"] = f"/media/{job['output_rel']}" if ok else None
+                job["ended"] = time.time()
+                job.setdefault("recipe", {})["seed"] = job.get("seed")
+                job["recipe"]["generated_at"] = job["generated_at"]
+                creation_store.update_take(job_id, {key: value for key, value in job.items()
+                    if key not in {"output"}})
+                parent_id = job.get("creation_id")
+                if parent_id:
+                    statuses = [take.get("status") for take in creation_store.list_takes(parent_id)]
+                    if all(value not in {"queued", "running"} for value in statuses):
+                        creation_store.update_creation(parent_id, {
+                            "status": "error" if "error" in statuses else "done"})
+            self.log(f"{engine_name} creation {'complete' if ok else 'FAILED'} {job_id}")
+        except Exception as exc:
+            with self._lock:
+                job["status"] = "error"
+                job["error"] = str(exc)
+                job["validation_status"] = "failed"
+                job["ended"] = time.time()
+                creation_store.update_take(job_id, {key: value for key, value in job.items()
+                                                    if key != "output"})
+                parent_id = job.get("creation_id")
+                if parent_id:
+                    statuses = [take.get("status") for take in creation_store.list_takes(parent_id)]
+                    if all(value not in {"queued", "running"} for value in statuses):
+                        creation_store.update_creation(parent_id, {
+                            "status": "error" if "error" in statuses else "done"})
+            self.log(f"{engine_name} creation FAILED {job_id}: {exc}", src="studio:error")
+
+    def creation_job(self, job_id: str) -> dict:
+        with self._lock:
+            job = self.create_jobs.get(job_id)
+            result = dict(job) if job else None
+        if result is None:
+            result = creation_store.get_take(job_id)
+        result.pop("output", None)
+        if result.get("status") == "done":
+            try:
+                relative_media = os.path.relpath(creation_audio_path(result), ROOT).replace(os.sep, "/")
+                result["audio_url"] = f"/media/{relative_media}"
+            except (OSError, PermissionError):
+                result["audio_url"] = None
+        return result
+
+    def creations_snapshot(self) -> dict:
+        result = creation_store.list_creations(page=1, page_size=100)
+        jobs = [take for creation in result["creations"] for take in creation["takes"]]
+        jobs.sort(key=lambda item: item.get("generated_at") or item.get("created_at") or 0,
+                  reverse=True)
+        with self._lock:
+            for job in self.create_jobs.values():
+                if job.get("id") not in {item.get("id") for item in jobs}:
+                    jobs.insert(0, {key: value for key, value in job.items() if key != "output"})
+        return {"jobs": jobs[:100], "creations": result["creations"]}
+
     def current(self) -> dict | None:
         with self._lock:
             if self._current:
@@ -990,10 +1545,12 @@ class JobRunner:
     def jobs_snapshot(self) -> dict:
         with self._lock:
             cur = dict(self._current) if self._current else None
-            return {"current": cur,
-                    "queued": sum(1 for _ in self._queue),
-                    "definitions": {k: v["label"]
-                                    for k, v in JOB_DEFS.items()}}
+            running_creations = sum(1 for item in self.create_jobs.values()
+                                    if item["status"] in {"queued", "running"})
+            queued = sum(1 for _ in self._queue)
+            definitions = {key: value["label"] for key, value in JOB_DEFS.items()}
+        return {"current": cur, "queued": queued,
+                "creations": running_creations, "definitions": definitions}
 
     # -- worker -----------------------------------------------------------
     def _worker(self) -> None:
@@ -1063,6 +1620,43 @@ class JobRunner:
 
 
 job_runner = JobRunner()
+# Never restore queued/running work as successful after a process restart.
+creation_store.recover_interrupted()
+
+
+def creation_audio_path(take: dict) -> str:
+    """Resolve a take WAV only within projects/created."""
+    rel = str(take.get("output_rel", "")).replace("\\\\", "/")
+    if not rel.startswith("projects/created/") or any(p in ("", ".", "..") for p in rel.split("/")):
+        raise PermissionError("take output path is invalid")
+    if not rel.lower().endswith((".wav", ".wave")):
+        raise PermissionError("take output must be WAV")
+    root = os.path.realpath(os.path.join(ROOT, "projects", "created"))
+    full = os.path.realpath(os.path.join(ROOT, *rel.split("/")))
+    try:
+        inside = os.path.commonpath((full, root)) == root
+    except ValueError:
+        inside = False
+    if not inside:
+        raise PermissionError("take output escapes projects/created")
+    return full
+
+
+def recipe_doc(take: dict) -> dict:
+    recipe = dict(take.get("recipe") or {})
+    recipe.update({key: take.get(key) for key in
+                   ("engine", "provider", "prompt", "genre", "mood", "bpm", "key",
+                    "duration_requested", "bars", "seed", "sample_library", "sample_mode",
+                    "authenticity", "era", "generated_at", "validation_status")})
+    recipe["application_version"] = BUILD
+    return recipe
+
+
+def duplicate_creation(creation_id: str) -> dict:
+    source = creation_store.get_creation(creation_id)
+    duplicate = creation_store.create(source["params"], f"{source['name']} copy",
+                                      source["tags"], source["notes"], status="ready")
+    return creation_store.get_creation(duplicate["id"])
 
 # ---------------------------------------------------------------------------
 # config writes (real album.json edits; the engine applies them on render)
@@ -1340,6 +1934,93 @@ class StudioHandler(BaseHTTPRequestHandler):
                 self.send_error_json(400, "bad request", str(exc))
         elif path == "/api/jobs":
             self.send_json(job_runner.jobs_snapshot())
+        elif path == "/api/create/config":
+            def provider_status(module_name: str) -> tuple[bool, bool, float, float]:
+                try:
+                    if module_name == "stable_audio":
+                        from timbor.stable_audio import StableAudioConfig as Config
+                    elif module_name == "yue_engine":
+                        from timbor.yue_engine import EngineConfig as Config
+                    else:
+                        from timbor.ace_step_engine import EngineConfig as Config
+                    provider_config = Config.from_env()
+                    enabled = bool(provider_config.enabled)
+                    provider_config.validate()
+                    return enabled, enabled, provider_config.default_duration, provider_config.max_duration
+                except Exception:
+                    return False, False, 30.0, 120.0
+
+            stable_enabled, stable_ready, _stable_default, _stable_max = provider_status("stable_audio")
+            yue_enabled, yue_ready, yue_default, yue_max = provider_status("yue_engine")
+            ace_enabled, ace_ready, ace_default, ace_max = provider_status("ace_step_engine")
+            self.send_json({
+                "genres": [{"id": name, "bpm_min": values["bpm"][0],
+                            "bpm_max": values["bpm"][1]}
+                           for name, values in GENRES.items()],
+                "sample_libraries": [{"id": root["id"], "name": root["name"],
+                                      "files": root["stats"].get("files", 0),
+                                      "categories": root["stats"].get("categories", {}),
+                                      "total_duration": self._library_duration(root["path"]),
+                                      "analyzed": root["stats"].get("analyzed", 0),
+                                      "pending": root["stats"].get("pending", 0),
+                                      "errors": root["stats"].get("errors", 0)}
+                                     for root in sample_library.roots()],
+                "moods": ["dark", "euphoric", "fun", "cinematic"],
+                "stable_audio_ready": stable_ready,
+                "stable_audio_enabled": stable_enabled,
+                "yue2_ready": yue_ready,
+                "yue2_enabled": yue_enabled,
+                "yue2_default_duration": yue_default,
+                "yue2_max_duration": yue_max,
+                "yue2_duration_is_target": True,
+                "acestep_ready": ace_ready,
+                "acestep_enabled": ace_enabled,
+                "acestep_default_duration": ace_default,
+                "acestep_max_duration": ace_max,
+            })
+        elif path == "/api/create/jobs":
+            self.send_json(job_runner.creations_snapshot())
+        elif path == "/api/creations":
+            self.send_json(creation_store.list_creations(
+                q=params.get("q", ""), filter_by=params.get("filter", "all"),
+                page=params.get("page", 1), page_size=params.get("page_size", 30)))
+        elif path == "/api/create/presets":
+            self.send_json({"presets": creation_presets()})
+        elif path.startswith("/api/creations/takes/"):
+            match = re.fullmatch(r"/api/creations/takes/([a-f0-9]{32})(/recipe|/waveform)?", path)
+            if not match:
+                return self.send_error_json(404, "not found", path)
+            try:
+                take = creation_store.get_take(match.group(1))
+                tail = match.group(2) or ""
+                if tail == "/recipe":
+                    self.send_json(recipe_doc(take))
+                elif tail == "/waveform":
+                    full = creation_audio_path(take)
+                    self.send_json(extract_peaks(full, int(params.get("bins", "800"))))
+                else:
+                    take.pop("output", None)
+                    self.send_json(take)
+            except KeyError:
+                self.send_error_json(404, "not found", "unknown take")
+            except FileNotFoundError as exc:
+                self.send_error_json(404, "not found", str(exc))
+        elif path.startswith("/api/creations/"):
+            creation_id = path.rsplit("/", 1)[-1]
+            if not re.fullmatch(r"[a-f0-9]{32}", creation_id):
+                return self.send_error_json(404, "not found", path)
+            try:
+                self.send_json(creation_store.get_creation(creation_id))
+            except KeyError:
+                self.send_error_json(404, "not found", "unknown creation")
+        elif path.startswith("/api/create/jobs/"):
+            job_id = path.rsplit("/", 1)[-1]
+            if not re.fullmatch(r"[a-f0-9]{32}", job_id):
+                return self.send_error_json(404, "not found", "unknown creation job")
+            try:
+                self.send_json(job_runner.creation_job(job_id))
+            except KeyError:
+                self.send_error_json(404, "not found", "unknown creation job")
         elif path == "/api/logs":
             since = int(params.get("since", "0"))
             lines, nxt = job_runner.logs_since(since)
@@ -1390,6 +2071,17 @@ class StudioHandler(BaseHTTPRequestHandler):
             except ValueError as exc:
                 self.send_error_json(400, "bad request", str(exc))
 
+    def _library_duration(self, root_path: str) -> float | None:
+        from timbor.samples.cache import SampleIndex
+        idx = SampleIndex(sample_library.db_path)
+        try:
+            prefix = root_path.rstrip(os.sep) + os.sep
+            row = idx.conn.execute("SELECT SUM(duration) FROM samples WHERE analyzed=1 AND error='' AND (lower(path)=lower(?) OR lower(substr(path,1,?))=lower(?))",
+                                   (root_path, len(prefix), prefix)).fetchone()
+            return round(float(row[0] or 0), 2)
+        finally:
+            idx.close()
+
     def _sample_library_stats(self) -> dict:
         roots = sample_library.roots()
         aggregate = {"files": 0, "analyzed": 0, "pending": 0, "errors": 0,
@@ -1430,22 +2122,31 @@ class StudioHandler(BaseHTTPRequestHandler):
             except ValueError as exc:
                 return self.send_error_json(400, "bad request", str(exc))
         else:
-            # Resolve only within the active album, whether the caller used an
-            # album-relative track path or its project-relative album path.
+            # Track previews stay inside the active album; generated creations
+            # are served only from their dedicated project output directory.
             rel_clean = rel.replace("\\", "/")
             if any(part in ("", ".", "..") for part in rel_clean.split("/")):
                 return self.send_error_json(400, "unsafe path", rel)
             parts = rel_clean.split("/")
-            album_real = os.path.realpath(ALBUM_DIR)
-            candidates = [os.path.realpath(os.path.join(ALBUM_DIR, *parts)),
-                          os.path.realpath(os.path.join(ROOT, *parts))]
-            def in_active_album(candidate: str) -> bool:
+            if parts[:2] == ["projects", "created"]:
+                allowed_root = os.path.realpath(os.path.join(ROOT, "projects", "created"))
+                candidate = os.path.realpath(os.path.join(ROOT, *parts))
                 try:
-                    return os.path.commonpath((candidate, album_real)) == album_real
+                    allowed = os.path.commonpath((candidate, allowed_root)) == allowed_root
                 except ValueError:
-                    return False
-            full = next((p for p in candidates if os.path.isfile(p)
-                         and in_active_album(p)), None)
+                    allowed = False
+                full = candidate if allowed and os.path.isfile(candidate) else None
+            else:
+                album_real = os.path.realpath(ALBUM_DIR)
+                candidates = [os.path.realpath(os.path.join(ALBUM_DIR, *parts)),
+                              os.path.realpath(os.path.join(ROOT, *parts))]
+                def in_active_album(candidate: str) -> bool:
+                    try:
+                        return os.path.commonpath((candidate, album_real)) == album_real
+                    except ValueError:
+                        return False
+                full = next((p for p in candidates if os.path.isfile(p)
+                             and in_active_album(p)), None)
             if full is None:
                 return self.send_error_json(404, "not found", rel)
         if not full.lower().endswith((".wav", ".wave")) or not os.path.isfile(full):
@@ -1524,6 +2225,66 @@ class StudioHandler(BaseHTTPRequestHandler):
             match = re.match(r"^/api/album/palette/roles/([a-z_]+)$", path)
             if match:
                 return self.send_json(remove_palette_role(match.group(1)))
+            match = re.fullmatch(r"/api/creations/([a-f0-9]{32})/takes/([a-f0-9]{32})", path)
+            if match:
+                creation_id, take_id = match.groups()
+                with job_runner._lock:
+                    if any(item.get("id") == take_id and item.get("status") in {"queued", "running"}
+                           for item in job_runner.create_jobs.values()):
+                        return self.send_error_json(409, "operation conflict", "cannot delete a take while it is generating")
+                if self.path.find("confirm=true") < 0:
+                    return self.send_error_json(409, "confirmation required", "add confirm=true to delete take metadata and its audio")
+                take = creation_store.get_take(take_id)
+                if take.get("creation_id") != creation_id:
+                    return self.send_error_json(404, "not found", "take does not belong to creation")
+                full = creation_audio_path(take)
+                parent = os.path.realpath(os.path.join(ROOT, "projects", "created", f"creation_{creation_id}"))
+                try:
+                    belongs_to_creation = os.path.commonpath((full, parent)) == parent
+                except ValueError:
+                    belongs_to_creation = False
+                if not belongs_to_creation:
+                    raise PermissionError("take is outside its creation directory")
+                if os.path.isfile(full):
+                    os.remove(full)
+                creation_store.delete_take(take_id)
+                return self.send_json({"deleted": True, "audio_deleted": True})
+            match = re.fullmatch(r"/api/creations/([a-f0-9]{32})", path)
+            if match:
+                creation_id = match.group(1)
+                with job_runner._lock:
+                    if any(item.get("creation_id") == creation_id and item.get("status") in {"queued", "running"}
+                           for item in job_runner.create_jobs.values()):
+                        return self.send_error_json(409, "operation conflict", "cannot delete a creation while a take is generating")
+                if self.path.find("confirm=true") < 0:
+                    return self.send_error_json(409, "confirmation required", "add confirm=true to delete creation metadata and its audio")
+                creation = creation_store.get_creation(creation_id)
+                root = os.path.realpath(os.path.join(ROOT, "projects", "created", f"creation_{creation_id}"))
+                allowed_root = os.path.realpath(os.path.join(ROOT, "projects", "created"))
+                try:
+                    inside = os.path.commonpath((root, allowed_root)) == allowed_root
+                except ValueError:
+                    inside = False
+                if not inside:
+                    raise PermissionError("creation directory is unsafe")
+                keep_audio = "keep_audio=true" in self.path.lower()
+                if not keep_audio:
+                    for take in creation["takes"]:
+                        full = creation_audio_path(take)
+                        try:
+                            belongs_to_creation = os.path.commonpath((full, root)) == root
+                        except ValueError:
+                            belongs_to_creation = False
+                        if os.path.isfile(full) and belongs_to_creation:
+                            os.remove(full)
+                    import shutil
+                    if os.path.isdir(root):
+                        shutil.rmtree(root)
+                creation_store.delete_creation(creation_id)
+                return self.send_json({"deleted": True, "audio_deleted": not keep_audio})
+            match = re.fullmatch(r"/api/create/presets/([a-f0-9]{32})", path)
+            if match:
+                return self.send_json({"deleted": creation_store.delete_preset(match.group(1))})
             self.send_error_json(404, "not found", path)
         except RuntimeError as exc:
             self.send_error_json(409, "operation conflict", str(exc))
@@ -1538,9 +2299,17 @@ class StudioHandler(BaseHTTPRequestHandler):
             if path == "/api/sample-libraries":
                 body = self.read_body()
                 self.send_json({"root": sample_library.add_root(body.get("path"))}, 201)
+            elif path == "/api/creations":
+                body = self.read_body()
+                name = str(body.get("name") or "Untitled creation")[:120]
+                created = creation_store.create(body.get("params") or {}, name,
+                                                body.get("tags") or [], body.get("notes") or "", status="ready")
+                self.send_json(created, 201)
             elif path == "/api/sample-libraries/scan":
                 body = self.read_body()
                 self.send_json(sample_library.start_scan(body.get("root_id")), 202)
+            elif path == "/api/sample-libraries/scan/cancel":
+                self.send_json(sample_library.cancel_scan(), 202)
             elif path == "/api/album/palette/samples":
                 result = add_palette_sample(self.read_body())
                 self.send_json(result)
@@ -1555,6 +2324,58 @@ class StudioHandler(BaseHTTPRequestHandler):
             elif path == "/api/albums/switch":
                 body = self.read_body()
                 self.send_json(switch_album(body.get("dir")))
+            elif path == "/api/create":
+                job = job_runner.submit_creation(self.read_body())
+                self.send_json(job, 202)
+            elif path == "/api/create/presets":
+                body = self.read_body()
+                preset = creation_store.save_preset(body.get("name", ""), body.get("params", {}),
+                                                    body.get("id"))
+                self.send_json(preset, 201)
+            elif path.startswith("/api/creations/"):
+                match = re.fullmatch(r"/api/creations/([a-f0-9]{32})(?:/(?:duplicate|retry-failed|generate-missing)|/takes/([a-f0-9]{32})/(favorite|notes|retry|name))?", path)
+                if not match:
+                    return self.send_error_json(404, "not found", path)
+                creation_id, take_id, action = match.groups()
+                if path.endswith("/duplicate"):
+                    return self.send_json(duplicate_creation(creation_id), 201)
+                if path.endswith("/retry-failed") or path.endswith("/generate-missing"):
+                    self.read_body()
+                    queued = job_runner.retry_creation_batch(
+                        creation_id, failed_only=path.endswith("/retry-failed"))
+                    return self.send_json({"takes": queued["takes"], "count": len(queued["takes"])}, 202)
+                body = self.read_body()
+                if action == "favorite":
+                    take = creation_store.get_take(take_id)
+                    if take.get("creation_id") != creation_id:
+                        raise KeyError(take_id)
+                    updated = creation_store.update_take(take_id, {"favorite": bool(body.get("favorite"))})
+                    with job_runner._lock:
+                        if take_id in job_runner.create_jobs:
+                            job_runner.create_jobs[take_id].update({"favorite": updated["favorite"]})
+                    return self.send_json(updated)
+                if action == "notes":
+                    if take_id:
+                        take = creation_store.get_take(take_id)
+                        if take.get("creation_id") != creation_id:
+                            raise KeyError(take_id)
+                        return self.send_json(creation_store.update_take(take_id, {"notes": str(body.get("notes", ""))[:5000]}))
+                    return self.send_json(creation_store.update_creation(creation_id, {"notes": str(body.get("notes", ""))[:5000], "tags": body.get("tags", [])}))
+                if action == "name":
+                    take = creation_store.get_take(take_id)
+                    if take.get("creation_id") != creation_id:
+                        raise KeyError(take_id)
+                    return self.send_json(creation_store.update_take(take_id, {"name": str(body.get("name", ""))[:120]}))
+                if action == "retry":
+                    take = creation_store.get_take(take_id)
+                    if take.get("creation_id") != creation_id:
+                        raise KeyError(take_id)
+                    queued = job_runner.retry_creation_batch(
+                        creation_id, take_ids=[take_id])
+                    return self.send_json(queued["takes"][0], 202)
+                if action is None:
+                    changes = {key: body[key] for key in ("name", "tags", "notes", "archived") if key in body}
+                    return self.send_json(creation_store.update_creation(creation_id, changes))
             elif path == "/api/jobs":
                 body = self.read_body()
                 kind = body.get("kind")
@@ -1587,7 +2408,7 @@ class StudioHandler(BaseHTTPRequestHandler):
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="TIMBOR Album Studio server")
+    ap = argparse.ArgumentParser(description="TIMBOR Music Studio server")
     ap.add_argument("--album", default=None,
                     help="album directory (default: auto-detect under albums/)")
     ap.add_argument("--list-albums", action="store_true",
@@ -1612,13 +2433,13 @@ def main() -> None:
         ALBUM_REL = os.path.relpath(ALBUM_DIR, ROOT).replace(os.sep, "/")
 
     httpd = ThreadingHTTPServer(("127.0.0.1", args.port), StudioHandler)
-    job_runner.log(f"TIMBOR Album Studio serving {ALBUM_REL} "
+    job_runner.log(f"TIMBOR Music Studio serving {ALBUM_REL} "
                    f"at http://127.0.0.1:{args.port}")
     if len(list_album_dirs()) > 1:
         job_runner.log("multiple albums available — switch from the "
                        "album picker in the top bar (jobs always target "
                        "the active album)", src="studio")
-    print(f"TIMBOR Album Studio — {ALBUM_REL}")
+    print(f"TIMBOR Music Studio — {ALBUM_REL}")
     print(f"  http://127.0.0.1:{args.port}   (Ctrl+C to stop)")
     try:
         httpd.serve_forever()

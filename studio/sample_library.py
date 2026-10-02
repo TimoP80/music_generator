@@ -17,7 +17,7 @@ from typing import Any
 
 from timbor.samples.cache import SampleIndex
 from timbor.samples.metadata import SampleMetadata
-from timbor.samples.scanner import scan_directory
+from timbor.samples.scanner import ScanCancelled, scan_directory
 
 SUPPORTED_FORMATS = {"wav", "aiff", "flac", "mp3"}
 SORTS = {
@@ -57,7 +57,9 @@ class SampleLibraryService:
         self._lock = threading.RLock()
         self._scan: dict[str, Any] = {"state": "IDLE", "root_id": None,
             "discovered": 0, "changed": 0, "unchanged": 0, "deleted": 0,
-            "analyzed": 0, "failed": 0, "current_file": "", "progress": 0.0}
+            "analyzed": 0, "failed": 0, "current_file": "",
+            "current_path": "", "progress": 0.0, "cancellation_requested": False}
+        self._cancel_event = threading.Event()
         self._thread: threading.Thread | None = None
         self.peaks_fn = None
         os.makedirs(os.path.dirname(self.db_path) or ".", exist_ok=True)
@@ -71,10 +73,15 @@ class SampleLibraryService:
             idx.close()
 
     @staticmethod
-    def _sha256(path: str) -> str:
+    def _sha256(path: str, cancel_event: threading.Event | None = None) -> str:
         h = hashlib.sha256()
         with open(path, "rb") as f:
-            for chunk in iter(lambda: f.read(1 << 20), b""):
+            while True:
+                if cancel_event and cancel_event.is_set():
+                    raise ScanCancelled("sample scan cancelled")
+                chunk = f.read(1 << 20)
+                if not chunk:
+                    break
                 h.update(chunk)
         return h.hexdigest()
 
@@ -417,30 +424,60 @@ class SampleLibraryService:
     def start_scan(self, root_id: str) -> dict:
         root = self._root(root_id)
         with self._lock:
-            if self._scan.get("state") in ("SCANNING", "ANALYZING"):
+            if (self._scan.get("state") in ("SCANNING", "ANALYZING", "FINALIZING")
+                    or (self._thread is not None and self._thread.is_alive())):
                 raise RuntimeError("a library scan is already running")
             self._scan = {"state": "SCANNING", "root_id": root_id,
                 "root": root["path"], "discovered": 0, "changed": 0,
                 "unchanged": 0, "deleted": 0, "analyzed": 0, "failed": 0,
-                "current_file": "", "progress": 0.0, "started": time.time()}
+                "current_file": "", "current_path": root["path"],
+                "progress": 0.0, "cancellation_requested": False,
+                "started": time.time()}
+            self._cancel_event = threading.Event()
             self._thread = threading.Thread(target=self._scan_worker,
                 args=(root,), daemon=True, name="timbor-sample-scan")
             self._thread.start()
             return dict(self._scan)
+
+    def cancel_scan(self) -> dict:
+        with self._lock:
+            if self._scan.get("state") not in ("SCANNING", "ANALYZING"):
+                raise RuntimeError("sample scan is no longer cancellable")
+            self._scan["cancellation_requested"] = True
+            self._cancel_event.set()
+            return dict(self._scan)
+
+    def _check_cancelled(self) -> None:
+        if self._cancel_event.is_set():
+            raise ScanCancelled("sample scan cancelled")
 
     def _scan_worker(self, root: dict) -> None:
         idx = None
         try:
             from timbor.samples.analyzer import analyze_file
             from timbor.samples.classifier import classify
-            files = scan_directory(root["path"], follow_symlinks=False)
+            def report_discovery(discovered: int, current_path: str) -> None:
+                self._check_cancelled()
+                with self._lock:
+                    self._check_cancelled()
+                    self._scan.update({"state": "SCANNING",
+                        "discovered": discovered, "current_path": current_path})
+
+            files = scan_directory(root["path"], follow_symlinks=False,
+                                   progress_callback=report_discovery,
+                                   cancel_event=self._cancel_event)
+            self._check_cancelled()
             # Never index symlink/junction aliases, even if their targets happen
             # to remain inside the root. This keeps identity stable and avoids
             # scanning cycles or platform-specific junction surprises.
             is_junction = getattr(os.path, "isjunction", lambda _path: False)
-            files = [f for f in files
-                     if not os.path.islink(f.path) and
-                     not is_junction(f.path) and within(f.path, root["path"])]
+            safe_files = []
+            for f in files:
+                self._check_cancelled()
+                if (not os.path.islink(f.path) and not is_junction(f.path)
+                        and within(f.path, root["path"])):
+                    safe_files.append(f)
+            files = safe_files
             idx = SampleIndex(self.db_path)
             prefix = root["path"].rstrip(os.sep) + os.sep
             scoped_rows = idx.conn.execute(
@@ -451,28 +488,34 @@ class SampleLibraryService:
                      (r["path"], r["fingerprint"] or "", r["content_hash"])
                      for r in scoped_rows
                      if within(r["path"], root["path"])}
-            by_path = {os.path.normcase(os.path.realpath(f.path)): f for f in files}
+            by_path = {}
             pending = []
             unchanged = 0
+            hash_pending = []
             for f in files:
+                self._check_cancelled()
                 key = os.path.normcase(os.path.realpath(f.path))
-                old = known.get(key, (None, None, None))[1]
+                by_path[key] = f
+                known_row = known.get(key)
+                old = known_row[1] if known_row else None
                 fp = SampleIndex.fingerprint(f.size, f.mtime)
                 if old == fp:
                     unchanged += 1
                 else:
                     pending.append(f)
-            gone = [v[0] for key, v in known.items() if key not in by_path]
-            hash_pending = [(f.path, known[os.path.normcase(os.path.realpath(f.path))][2])
-                            for f in files
-                            if os.path.normcase(os.path.realpath(f.path)) in known
-                            and not known[os.path.normcase(os.path.realpath(f.path))][2]]
+                if known_row and not known_row[2]:
+                    hash_pending.append((f.path, known_row[2]))
+            gone = []
+            for key, row in known.items():
+                self._check_cancelled()
+                if key not in by_path:
+                    gone.append(row[0])
             with self._lock:
+                self._check_cancelled()
                 self._scan.update({"state": "ANALYZING", "discovered": len(files),
                     "changed": len(pending), "unchanged": unchanged,
-                    "deleted": len(gone), "current_file": ""})
-            for start in range(0, len(gone), 500):
-                idx.delete_paths(gone[start:start + 500])
+                    "deleted": len(gone), "current_file": "", "current_path": "",
+                    "progress": 0.0})
             analyzed = failed = 0
             metas: list[SampleMetadata] = []
             flags: list[bool] = []
@@ -494,27 +537,33 @@ class SampleLibraryService:
             # Populate missing content hashes once; this detects exact duplicate
             # files without re-running analysis for unchanged index entries.
             for path, _old_hash in hash_pending:
+                self._check_cancelled()
                 try:
-                    hashes.append((path, self._sha256(path)))
+                    hashes.append((path, self._sha256(path, self._cancel_event)))
                 except OSError:
                     pass
                 work_done += 1
                 if len(hashes) >= 250:
                     flush_batch()
+                self._check_cancelled()
                 with self._lock:
                     self._scan["current_file"] = path
                     self._scan["progress"] = work_done / total_work
 
             for f in pending:
+                self._check_cancelled()
                 with self._lock:
                     self._scan["current_file"] = f.path
                     self._scan["progress"] = work_done / total_work
                 try:
                     meta = analyze_file(f.path, f.format)
+                    self._check_cancelled()
                     if not meta.error or meta.error == "no-decoder":
                         classify(meta)
                     if meta.analyzed and not meta.error:
                         analyzed += 1
+                except ScanCancelled:
+                    raise
                 except Exception as exc:  # unreadable/disappeared file
                     try:
                         st = os.stat(f.path)
@@ -531,25 +580,57 @@ class SampleLibraryService:
                     failed += 1
                 metas.append(meta); flags.append(meta.analyzed and not meta.error)
                 try:
-                    hashes.append((f.path, self._sha256(f.path)))
+                    hashes.append((f.path, self._sha256(f.path, self._cancel_event)))
                 except OSError:
                     pass
                 work_done += 1
                 if len(metas) >= 250 or len(hashes) >= 250:
                     flush_batch()
+                self._check_cancelled()
                 with self._lock:
                     self._scan["analyzed"] = analyzed
                     self._scan["failed"] = failed
                     self._scan["progress"] = work_done / total_work
+            self._check_cancelled()
             flush_batch()
+            # Stale rows are deleted only after discovery and analysis finish.
+            # This bounded final transaction is explicitly non-cancellable.
+            with self._lock:
+                self._check_cancelled()
+                self._scan.update({"state": "FINALIZING", "current_file": "",
+                                   "current_path": ""})
+            idx.conn.execute("BEGIN IMMEDIATE")
+            for start in range(0, len(gone), 500):
+                paths = gone[start:start + 500]
+                q = ",".join("?" for _ in paths)
+                idx.conn.execute(f"DELETE FROM samples WHERE path IN ({q})", paths)
+            idx.conn.commit()
             with self._lock:
                 self._scan.update({"state": "COMPLETE", "progress": 1.0,
-                    "current_file": "", "analyzed": analyzed, "failed": failed,
+                    "current_file": "", "current_path": "", "analyzed": analyzed,
+                    "failed": failed, "cancellation_requested": False,
                     "ended": time.time()})
+        except ScanCancelled:
+            if idx is not None:
+                try:
+                    idx.conn.rollback()
+                except Exception:
+                    pass
+            with self._lock:
+                self._scan.update({"state": "CANCELLED", "progress": 0.0,
+                    "current_file": "", "current_path": "",
+                    "cancellation_requested": False, "ended": time.time()})
         except Exception as exc:  # surface worker failures to UI
+            if idx is not None:
+                try:
+                    idx.conn.rollback()
+                except Exception:
+                    pass
             with self._lock:
                 self._scan.update({"state": "ERROR", "error": str(exc),
-                                   "current_file": "", "ended": time.time()})
+                                   "current_file": "", "current_path": "",
+                                   "cancellation_requested": False,
+                                   "ended": time.time()})
         finally:
             if idx is not None:
                 try:

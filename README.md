@@ -836,6 +836,144 @@ new or modified files, delete stale index rows for files missing from that
 root, and calculate stable exact-content duplicate groups. The UI reports
 scan progress and current file; cancellation is not supported.
 
+### Music creation
+
+The **NEW MUSIC** workspace creates a standalone TIMBOR track without changing
+the active album. Describe the sound, then optionally set genre, mood, BPM,
+key, bar count, sample blend/library, and a reproducible seed. Generation runs
+in the background; finished takes can be auditioned in the shared transport or
+downloaded as WAV. Each take is saved beneath `projects/created/` with project
+and stem artifacts for procedural renders.
+
+TIMBOR's local procedural engine is the default and has no cloud inference
+cost. Stable Audio 3 appears only when its opt-in Modal URL/key are configured
+and `STABLE_AUDIO_ENABLED=true`; remote inference can incur Modal charges and
+requires authorized Hugging Face model access. It is intentionally unavailable
+until those checks pass. Local sample libraries are used only by the procedural
+renderer; they are never uploaded to Modal.
+
+#### Stable Audio 3 — serverless Modal generation (opt-in)
+
+The optional remote mode uses Stability AI's official Stable Audio 3 inference
+implementation through an on-demand Modal service. It is CPU-only Small Music
+(`stabilityai/stable-audio-3-small-music`, up to 120 seconds) and pins official
+source commit `3a82c807b69cf4b7c5c05270011a5d5e47abac18`. The checkpoint is
+gated: accept applicable Stability AI and text-encoder licenses and confirm
+Hugging Face account access before deployment. The Modal `huggingface-token`
+secret must provide `HF_TOKEN`.
+
+```bash
+modal deploy modal/stable_audio.py
+```
+
+The deploy code creates a random bearer credential in ignored local `.env` and
+passes it to Modal as an in-memory Secret without printing it. Configure the
+returned endpoint as `STABLE_AUDIO_MODAL_URL`; set `STABLE_AUDIO_ENABLED=true`
+to opt in. Use the `*.modal.run` invocation URL printed by `modal deploy`
+(for this app, `https://<workspace>--timbor-stable-audio-3-stableaudioservice-web.modal.run`),
+not the `modal.com/apps/...` dashboard page, which answers POST with HTTP 405.
+A trailing `/generate` or slash is trimmed automatically. Never commit or share
+`.env`. Remote generation may incur Modal charges; no inference occurs on the
+default procedural path.
+
+The CLI supports text-to-audio, audio-to-audio, and inpainting/continuation.
+Only Small Music and CPU are enabled. Conditioning uploads one WAV, not a sample
+library. Generated WAVs and JSON metadata are written only after local format,
+duration, and signal validation. The client avoids automatic retries after
+timeouts to prevent duplicate paid inference.
+
+```powershell
+python generate.py "dark Rotterdam rave" --stable-audio --genre gabber `
+  --bpm 190 --duration 30 --seed 12345 -o stable_audio.wav
+```
+
+Cloud generation remains blocked until gated Hugging Face access has been
+granted; no successful cloud output or latency is claimed until a real model
+WAV is received and validated locally.
+
+#### YuE2 and ACE-Step — separate opt-in Modal GPU endpoints
+
+YuE2 and ACE-Step are independent full-track generation services. They do not
+replace or alter TIMBOR's deterministic local renderer, do not use local sample
+libraries, and are never selected unless explicitly enabled. Each service uses
+its own bearer key and endpoint; configure one provider without setting the
+other. Modal GPU time, cold starts, storage, and model downloads may incur
+charges. Studio limits remote requests to one take at a time to avoid accidental
+batch billing. Generated duration is validated from the actual WAV. For YuE2,
+the requested duration is a target/metadata only because its pipeline does not
+accept an exact output-duration parameter.
+
+YuE2 is deployed from the official `multimodal-art-projection/YuE` source at
+`yue2-v0.1.6`, using `m-a-p/YuE2-3B` and the YuE2 VAE on an L40S by default.
+The model weights are CC BY-NC 4.0 with additional creator terms. This TIMBOR
+configuration is labeled for personal/noncommercial use only unless you obtain
+a separate license; review and follow the model's current license and creator
+terms before using it. ACE-Step is deployed from the official
+`ace-step/ACE-Step-1.5` source at `v0.1.8`, with the 0.6B language-model
+backend selected by default. Both services currently expose text-to-music
+only and return validated 48 kHz stereo WAV.
+
+From the repository root, run `python modal/configure_music_models.py`. It
+creates missing separate API keys in the ignored `.env`, deploys both apps, and
+stores each printed Modal invocation URL without exposing the keys. Modal CLI
+and account setup must already be available (`modal setup`). To only create
+keys/configuration without deploying, use:
+
+```bash
+python modal/configure_music_models.py --configure-only
+```
+
+Deployments remain opt-in; pass `--enable` only if you want
+the script to set both `*_ENABLED=true` after both deployments succeed.
+
+Alternatively, deploy each endpoint independently with `modal deploy
+modal/yue_engine.py` and `modal deploy modal/ace_step_engine.py`, then place each
+printed `*.modal.run` invocation URL in its matching `YUE2_MODAL_URL` or
+`ACESTEP_MODAL_URL`. Do not use a Modal dashboard URL, and never commit or share
+`.env`. GPU, CPU, memory, idle timeout, duration limits, and (for ACE-Step) the
+LM model can be adjusted with matching `.env` variables; deployment settings
+are read at deploy time, so redeploy after changing them. Check Modal logs and
+billing before increasing resource limits or duration.
+
+The YuE2 weights have noncommercial license restrictions unless separately
+licensed. Review all model terms before use.
+
+```bash
+python generate.py "1994 Rotterdam gabber anthem, dark but euphoric" \\
+  --engine yue2 --duration 180 --lyrics "[Chorus] Raise the signal" \\
+  --seed 424242 -o yue2.wav
+python generate.py "dark warehouse rave" --engine acestep \\
+  --duration 30 --seed 424242 -o acestep.wav
+```
+
+Each remote CLI request writes a WAV and `.wav.json` metadata sidecar only
+after format, stereo/sample-rate, duration-limit, and signal checks pass.
+Timeouts are not automatically retried, to avoid duplicate paid inference.
+No actual YuE2 or ACE-Step deployment or cloud generation is claimed until a
+real endpoint responds and its WAV passes local validation.
+
+If a cloud take hangs and then fails, the container is usually crash-looping
+rather than merely slow: `modal app logs` shows the reason, most often a 403
+`GatedRepoError` because the account whose token is stored in the
+`huggingface-token` secret has not been granted access to the gated checkpoint.
+The deployed service reports this directly: `GET /health` returns 503 with the
+load error, and `GET /diagnostic` includes `model_loaded` and
+`model_load_error`, so the failure is visible instead of surfacing as a bare
+timeout.
+
+### Sample Library setup and workflow
+
+Start Studio from the project root:
+
+```bash
+python studio/server.py --port 8765
+```
+
+Open the browser at `http://127.0.0.1:8765`. The **NEW MUSIC** section is the
+landing screen; compose a prompt, adjust style and arrangement controls, then
+press **CREATE TRACK**. Completed takes can be previewed or downloaded, and
+remain independent of the selected album.
+
 The Studio uses TIMBOR's `SampleIndex`, scanner, analyzer, and classifier.
 Search, filters, sorting, and pagination execute against SQLite; only the
 requested page is sent to the browser. The inspector reports stored sample

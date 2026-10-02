@@ -16,7 +16,7 @@ Audio:
 Sample rate: 44100 Hz
 Channels: 2 (stereo)
 Master format: 32-bit float WAV (+ 16-bit PCM distribution copy)
-Sequence mode: gap
+Sequence mode: crossfade
 
 Source:
 TIMBOR project version: 0.3.0

@@ -156,6 +156,23 @@ def test_scanner():
     files = scan_directory(lib)
     assert len(files) == 15, f"expected 15 audio files, got {len(files)}"
     assert all(f.format in ("wav",) for f in files)
+    updates = []
+    reported_files = scan_directory(
+        lib, progress_callback=lambda count, path: updates.append((count, path)))
+    assert len(reported_files) == len(files)
+    assert updates and updates[-1][0] == len(files)
+    assert all(os.path.exists(path) for _, path in updates)
+
+    import threading
+    from timbor.samples.scanner import ScanCancelled
+    cancelled = threading.Event()
+    cancelled.set()
+    try:
+        scan_directory(lib, cancel_event=cancelled)
+    except ScanCancelled:
+        pass
+    else:
+        raise AssertionError("scanner ignored cancellation")
     assert not any(f.path.endswith(".txt") for f in files)
     # duplicates by content are both indexed (fingerprints differ by path)
     paths = {f.path for f in files}
