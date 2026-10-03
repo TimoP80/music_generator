@@ -3,11 +3,11 @@
   {
    "boundary_sample": 2607085,
    "boundary_seconds": 59.1176,
-   "context_discontinuity": 0.497757,
-   "discontinuity": 0.227385,
+   "context_discontinuity": 0.497656,
+   "discontinuity": 0.226017,
    "from": "01",
    "mode": "equal_power_crossfade",
-   "peak_around": -9.32,
+   "peak_around": -9.31,
    "rms_post_dbfs": -14.0,
    "rms_pre_dbfs": -13.04,
    "status": "PASS",
@@ -16,13 +16,13 @@
   {
    "boundary_sample": 4756357,
    "boundary_seconds": 107.8539,
-   "context_discontinuity": 0.82554,
-   "discontinuity": 0.025745,
+   "context_discontinuity": 0.82565,
+   "discontinuity": 0.026314,
    "from": "02",
    "mode": "equal_power_crossfade",
-   "peak_around": -5.48,
-   "rms_post_dbfs": -13.75,
-   "rms_pre_dbfs": -13.43,
+   "peak_around": -5.46,
+   "rms_post_dbfs": -13.74,
+   "rms_pre_dbfs": -13.44,
    "status": "PASS",
    "to": "03"
   },
@@ -73,12 +73,12 @@
   },
   {
    "check": "boundary_01_02",
-   "detail": "PASS disc=0.2274 mode=equal_power_crossfade",
+   "detail": "PASS disc=0.2260 mode=equal_power_crossfade",
    "ok": true
   },
   {
    "check": "boundary_02_03",
-   "detail": "PASS disc=0.0257 mode=equal_power_crossfade",
+   "detail": "PASS disc=0.0263 mode=equal_power_crossfade",
    "ok": true
   },
   {
@@ -98,12 +98,12 @@
   },
   {
    "check": "master_unchanged_01",
-   "detail": "fc106931b08ece412e57b25d71c5c2c1",
+   "detail": "a32a2f627921ae44f95fe7ceea862f6e",
    "ok": true
   },
   {
    "check": "master_unchanged_02",
-   "detail": "51448ee849469d32a25c193decb600ad",
+   "detail": "5ded895f7718c3fb5d17ced2824664cc",
    "ok": true
   },
   {

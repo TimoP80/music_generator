@@ -161,7 +161,6 @@ def build_palette(cfg, sample_index, genres: list[str]) -> dict:
             if entry["selection_score"] > kept["selection_score"]:
                 kept["selection_score"] = entry["selection_score"]
                 kept["scored_for_genre"] = entry["scored_for_genre"]
-            merged[role] = kept
         else:
             by_path[p] = entry
             merged[role] = entry

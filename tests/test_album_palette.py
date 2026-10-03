@@ -23,12 +23,14 @@ def _index():
     from timbor.samples.index import index_library
     from tests.test_samples import build_fixture_library
     lib = os.path.join(TMP, "lib")
-    if _DB is None or not os.path.exists(_DB):
-        if not os.path.exists(lib):
-            build_fixture_library(lib)
-        _DB = os.path.join(TMP, "samples.db")
-        index_library(lib, db_path=_DB, verbose=False)
+    _DB = os.path.join(TMP, "samples.db")
+    if not os.path.exists(lib):
+        build_fixture_library(lib)
     idx = SampleIndex(_DB)
+    if idx.analyzed_count() == 0:
+        idx.close()
+        index_library(lib, db_path=_DB, verbose=False)
+        idx = SampleIndex(_DB)
     return idx
 
 

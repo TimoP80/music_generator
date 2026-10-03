@@ -384,11 +384,11 @@ def hoover(freq: float, dur: float, seed: int | None = None) -> np.ndarray:
 
 def reese(freq: float, dur: float, seed: int | None = None) -> np.ndarray:
     n = int(dur * SR)
-    a = osc_saw(freq * 1.008, n, 0.1)
-    b = osc_saw(freq * 0.992, n, 0.6)
+    a = osc_saw(freq * 1.007, n, 0.1)
+    b = osc_saw(freq * 0.993, n, 0.6)
     out = (a + b) * 0.5
-    out = lp(out, 950)
-    out += np.sin(TWO_PI * freq * np.arange(n) / SR) * 0.55  # true sub layer
+    out = lp(out, 900)
+    out += np.sin(TWO_PI * freq * np.arange(n) / SR) * 0.5  # true sub layer
     return out
 
 
@@ -407,8 +407,6 @@ def acid_bass(freq: float, dur: float, accent: bool = False,
     fc1 = base * 0.7
     out = filter_sweep(wave, "lp", fc0, fc1, q=7.0, blocks=32,
                        res=1.4 if accent else 0.9)
-    if accent:
-        out = dist_drive(out, 1.4)
     out *= adsr(n, 0.003, 0.08, 0.55, 0.05)
     return out
 
@@ -429,9 +427,9 @@ def rumble_bass(freq: float, dur: float, seed: int | None = None) -> np.ndarray:
     """Gabber-style distorted 16th rumble: driven saw + sub, LP-tamed."""
     n = int(dur * SR)
     out = osc_saw(freq, n) + 0.4 * osc_saw(freq * 1.005, n, 0.3)
-    out = dist_drive(out, 4.2)
-    out = lp(out, 340)
-    out += np.sin(TWO_PI * freq * np.arange(n) / SR) * 0.65
+    out = dist_drive(out, 4.0)
+    out = lp(out, 320)
+    out += np.sin(TWO_PI * freq * np.arange(n) / SR) * 0.6
     out *= adsr(n, 0.004, 0.05, 0.9, 0.03)
     return normalize(out, 0.85)
 

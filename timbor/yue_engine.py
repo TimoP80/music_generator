@@ -390,8 +390,6 @@ class YueEngineProvider:
             raise YueEngineError("YuE2 is disabled; set YUE2_ENABLED=true")
         if not self.config.modal_url:
             raise YueEngineError("set YUE2_MODAL_URL to your deployed YuE2 Modal endpoint")
-        if "mock" in self.config.modal_url or "127.0.0.1" in self.config.modal_url:
-            return _local_fallback_render(request, self.config, "YuE2")
         body, content_type, meta = self._build_body(request)
         job_id = meta["job_id"]
         headers = {"Content-Type": content_type, "Accept": "audio/wav, application/json",
@@ -445,66 +443,23 @@ class YueEngineProvider:
                 elif "crash-loop" in body.lower() or "gated" in body.lower():
                     message = f"{message} (YuE2 container may be crash-looping; check Modal logs)"
                 if exc.code not in (429, 502, 503, 504) or attempt >= self.config.max_retries:
-                    return _local_fallback_render(request, self.config, "YuE2")
+                    raise YueEngineError(message) from exc
                 last_error = YueEngineError(message)
             except (urllib.error.URLError, TimeoutError, OSError) as exc:
-                return _local_fallback_render(request, self.config, "YuE2")
+                if isinstance(exc, TimeoutError) or "timed out" in str(exc).lower():
+                    detail = (f"YuE2 did not respond within "
+                              f"{self.config.timeout:g}s and was not retried to "
+                              f"avoid duplicate paid inference; "
+                              f"check Modal container logs")
+                else:
+                    detail = (f"YuE2 could not be reached ({exc}); "
+                              f"check Modal container logs")
+                raise YueEngineError(detail) from exc
             except YueEngineError:
-                return _local_fallback_render(request, self.config, "YuE2")
+                raise
             delay = min(2 ** attempt, 8)
             logger.warning(json.dumps({"event": "retry_started", "request_id": job_id,
                                        "attempt": attempt + 2, "delay_seconds": delay,
                                        "error": str(last_error)}))
             time.sleep(delay)
-        return _local_fallback_render(request, self.config, "YuE2")
-
-
-def _local_fallback_render(request: GenerationRequest, config: EngineConfig, provider_name: str) -> tuple[bytes, dict]:
-    import io
-    import wave
-    import numpy as np
-    from timbor import Plan, render_track, stereoize, master
-    bpm = request.bpm if request.bpm is not None else 170.0
-    seed_val = request.seed if (request.seed is not None and request.seed >= 0) else 42
-    plan = Plan(prompt=request.prompt, genre=request.genre, bpm=bpm,
-                key=request.key, mood=request.mood, authenticity="hybrid", seed=seed_val)
-    song, buses, qc = render_track(plan)
-    l, r = stereoize(buses)
-    l, r = master(l, r)
-    target_len = int(request.duration * 48000)
-    current_len = len(l)
-    t_orig = np.linspace(0, current_len / 44100.0, current_len, endpoint=False)
-    t_new = np.linspace(0, request.duration, target_len, endpoint=False)
-    l_48 = np.interp(t_new, t_orig, l)
-    r_48 = np.interp(t_new, t_orig, r)
-    inter = np.empty((target_len, 2), dtype="<f4")
-    inter[:, 0] = l_48
-    inter[:, 1] = r_48
-    pcm = (np.clip(inter, -1, 1) * 32767).astype("<i2")
-
-    out = io.BytesIO()
-    with wave.open(out, "wb") as w:
-        w.setnchannels(2)
-        w.setsampwidth(2)
-        w.setframerate(48000)
-        w.writeframes(pcm.tobytes())
-    audio = out.getvalue()
-
-    diag = inspect_wav(audio)
-    res = {
-        "job_id": str(uuid.uuid4()),
-        "model": config.model,
-        "seed": seed_val,
-        "prompt": request.stable_prompt(),
-        "duration": diag.duration,
-        "requested_duration": request.duration,
-        "sample_rate": 48000,
-        "channels": 2,
-        "format": "wav",
-        "audio_bytes": len(audio),
-        "total_seconds": 0.5,
-        "diagnostics": diag.to_json(),
-        "generation_seconds": 0.4,
-        "metadata": {"fallback": True, "provider": provider_name}
-    }
-    return audio, res
+        raise last_error or YueEngineError("generation failed")

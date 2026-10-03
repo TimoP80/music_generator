@@ -7,7 +7,7 @@
   "source_album_project": "TIMBOR \u2014 Machine Rave EP"
  },
  "audio": {
-  "album_master_hash": "d499ffa534fd0b43569b671c13169bf7",
+  "album_master_hash": "3b2c8814202d23d283737a056aa71133",
   "bit_depth": 32,
   "channels": 2,
   "sample_rate": 44100
@@ -77,7 +77,7 @@
    "genre": "gabber",
    "key": "D minor",
    "order": 1,
-   "source_master_hash": "fc106931b08ece412e57b25d71c5c2c1",
+   "source_master_hash": "a32a2f627921ae44f95fe7ceea862f6e",
    "source_project": "01/project.json",
    "title": "Track 01"
   },
@@ -88,7 +88,7 @@
    "genre": "jungle",
    "key": "D minor",
    "order": 2,
-   "source_master_hash": "51448ee849469d32a25c193decb600ad",
+   "source_master_hash": "5ded895f7718c3fb5d17ced2824664cc",
    "source_project": "02/project.json",
    "title": "Track 02"
   },
