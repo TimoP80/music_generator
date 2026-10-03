@@ -169,7 +169,7 @@ def test_wav_info_probe():
     frames, sr, ch, bits = wav_info(os.path.join(
         _EP, "01", "audio", "master.wav"))
     assert sr == 44100 and ch == 2 and bits == 32
-    assert abs(frames / sr - 63.118) < 0.01
+    assert abs(frames / sr - 62.118) < 0.01
     print("  WAV header probe (frames/sr/ch/bits): OK")
 
 

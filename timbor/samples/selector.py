@@ -204,7 +204,7 @@ def select_for_song(song, index: SampleIndex, seed: int, mode: str = "balanced",
         spec = ROLE_SPECS[role]
         cands: list[tuple[float, SampleMetadata, dict]] = []
         for cat in spec["categories"]:
-            for m in index.by_category(cat, analyzed_only=True, limit=120):
+            for m in index.by_category(cat, analyzed_only=True, limit=5000):
                 if m.path in used:
                     continue
                 sec_energy = 0.7
@@ -235,20 +235,21 @@ def _plan_sample_roles(song, mode: str) -> list[tuple[str, list[str] | None, flo
     break_driven = song.plan.pack["drums"] in ("jungle", "dnb", "bigbeat")
     if break_driven:
         roles.append(("main_break", ["drop", "drop2", "groove", "dev"], 0.95))
-        roles.append(("alt_break", ["variation", "theme"], 0.8))
+        roles.append(("alt_break", ["variation", "theme"], 0.85))
     else:
-        roles.append(("main_break", ["drop", "drop2"], 0.7 if mode != "subtle" else 0.4))
-    roles.append(("perc_loop", ["groove", "theme", "dev"], 0.7))
-    roles.append(("vocal_hit", ["drop", "drop2", "variation"], 0.75))
-    roles.append(("vocal_texture", ["break", "break2", "intro"], 0.8))
-    roles.append(("melodic_loop", ["theme", "dev", "drop"], 0.75))
-    roles.append(("stab_hit", ["drop", "drop2", "variation", "groove"], 0.7))
-    roles.append(("riser", ["build", "build2"], 0.85))
-    roles.append(("impact", ["drop", "drop2"], 0.8))
-    roles.append(("texture", ["intro", "break", "break2", "outro"], 0.8))
-    roles.append(("pad", ["break", "break2", "theme"], 0.7))
-    if mode == "heavy":
-        roles.append(("bass_sample", ["drop", "drop2"], 0.6))
+        roles.append(("main_break", ["drop", "drop2"], 0.85 if mode != "subtle" else 0.5))
+        roles.append(("alt_break", ["variation", "dev"], 0.7 if mode in ("balanced", "heavy") else 0.3))
+    roles.append(("perc_loop", ["groove", "theme", "dev"], 0.8))
+    roles.append(("vocal_hit", ["drop", "drop2", "variation"], 0.85))
+    roles.append(("vocal_texture", ["break", "break2", "intro"], 0.85))
+    roles.append(("melodic_loop", ["theme", "dev", "drop"], 0.8))
+    roles.append(("stab_hit", ["drop", "drop2", "variation", "groove"], 0.8))
+    roles.append(("riser", ["build", "build2"], 0.9))
+    roles.append(("impact", ["drop", "drop2"], 0.85))
+    roles.append(("texture", ["intro", "break", "break2", "outro"], 0.85))
+    roles.append(("pad", ["break", "break2", "theme"], 0.8))
+    if mode in ("balanced", "heavy"):
+        roles.append(("bass_sample", ["drop", "drop2"], 0.75 if mode == "heavy" else 0.5))
     return roles
 
 

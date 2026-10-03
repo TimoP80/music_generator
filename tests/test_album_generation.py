@@ -26,9 +26,9 @@ def _library():
     global _LIB, _DB
     if _DB is None:
         from timbor.samples.index import index_library
-        ws = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        from tests.test_samples import build_fixture_library
         _LIB = os.path.join(TMP, "lib")
-        shutil.copytree(os.path.join(ws, "data", "demo_library"), _LIB)
+        build_fixture_library(_LIB)
         _DB = os.path.join(TMP, "samples.db")
         index_library(_LIB, db_path=_DB, verbose=False)
     return _LIB, _DB

@@ -5,11 +5,11 @@
  "generator": {
   "name": "TIMBOR",
   "version": "0.3.0",
-  "python": "3.14.6",
-  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "os": "Linux-6.8.0-x86_64-with-glibc2.39",
   "sample_rate": 44100,
   "seed": 424242,
-  "generated_at": "2026-10-01T05:44:58"
+  "generated_at": "2026-10-03T01:34:48"
  },
  "config": {
   "name": "TIMBOR \u2014 Machine Rave EP",
@@ -130,7 +130,7 @@
     "ableton": "01/ableton"
    },
    "duration_seconds": 62.12,
-   "samples_used": 5
+   "samples_used": 0
   },
   {
    "number": "02",
@@ -170,7 +170,7 @@
     "ableton": "02/ableton"
    },
    "duration_seconds": 51.74,
-   "samples_used": 4
+   "samples_used": 0
   },
   {
    "number": "03",
@@ -210,7 +210,7 @@
     "ableton": "03/ableton"
    },
    "duration_seconds": 60.85,
-   "samples_used": 4
+   "samples_used": 0
   },
   {
    "number": "04",
@@ -252,7 +252,7 @@
     "ableton": "04/ableton"
    },
    "duration_seconds": 68.13,
-   "samples_used": 4
+   "samples_used": 0
   }
  ],
  "palette": {
@@ -263,50 +263,7 @@
    "jungle",
    "trance"
   ],
-  "roles": {
-   "impact": {
-    "id": "smp818f",
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\fx\\vox_shout_01.wav",
-    "filename": "vox_shout_01.wav",
-    "category": "fx",
-    "bpm": 150.32,
-    "key": null,
-    "duration": 1.2,
-    "selection_score": 2.75,
-    "scored_for_genre": "gabber",
-    "roles": [
-     "impact"
-    ]
-   },
-   "melodic_loop": {
-    "id": "smp33d2",
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-    "filename": "chord_loop_Amin_128bpm.wav",
-    "category": "chord",
-    "bpm": 128.0,
-    "key": "A:min",
-    "duration": 3.75,
-    "selection_score": 3.11,
-    "scored_for_genre": "trance",
-    "roles": [
-     "melodic_loop"
-    ]
-   },
-   "main_break": {
-    "id": "smp4ac7",
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-    "filename": "amen_break_00_174bpm.wav",
-    "category": "breakbeat",
-    "bpm": 174.12,
-    "key": null,
-    "duration": 2.759,
-    "selection_score": 6.64,
-    "scored_for_genre": "jungle",
-    "roles": [
-     "main_break"
-    ]
-   }
-  }
+  "roles": {}
  },
  "validation": [
   {
@@ -320,24 +277,6 @@
    "severity": "warning",
    "message": "bpm 155 outside [158, 182] (snapped to hard_house genre range)",
    "track": 3
-  },
-  {
-   "code": "palette_weak_propagation",
-   "severity": "warning",
-   "message": "palette chord_loop_Amin_128bpm.wav reaches 2/4 tracks (< majority)"
   }
- ],
- "sequencing": {
-  "enabled": true,
-  "transition_mode": "gap",
-  "gap_seconds": 2.0,
-  "fade_in_seconds": 0.0,
-  "fade_out_seconds": 0.0,
-  "crossfade_seconds": 4.0,
-  "preserve_track_boundaries": true
- },
- "transition": {
-  "quantize": "none",
-  "curve": "equal_power"
- }
+ ]
 }

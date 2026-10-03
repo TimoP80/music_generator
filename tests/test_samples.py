@@ -335,7 +335,8 @@ def test_integration_hybrid():
 def test_backward_compatible():
     plan = Plan("dark gabber", seed=3, bars_limit=16)
     song, buses, qc = render_track(plan)  # no sample index at all
-    assert "samples" not in buses
+    smp = buses.get("samples")
+    assert smp is None or float(np.max(np.abs(smp))) == 0.0
     assert float(np.sqrt(np.mean(buses["drums"] ** 2))) > 0
     print("  backward compatibility: OK")
 

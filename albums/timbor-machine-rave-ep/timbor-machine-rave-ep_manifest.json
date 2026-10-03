@@ -80,73 +80,14 @@
  "format": "timbor-album-manifest",
  "generator": {
   "name": "TIMBOR",
-  "os": "Windows-11-10.0.26200-SP0",
-  "python": "3.14.6",
+  "os": "Linux-6.8.0-x86_64-with-glibc2.39",
+  "python": "3.12.13",
   "seed": 424242,
   "version": "0.3.0"
  },
  "name": "TIMBOR \u2014 Machine Rave EP",
  "palette": {
-  "entries": [
-   {
-    "bpm": 174.12,
-    "category": "breakbeat",
-    "filename": "amen_break_00_174bpm.wav",
-    "id": "smp4ac7",
-    "key": null,
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-    "placements": 112,
-    "roles": [
-     "main_break"
-    ],
-    "scored_for_genre": "jungle",
-    "selection_score": 6.64,
-    "tracks_using": [
-     "01",
-     "02",
-     "03",
-     "04"
-    ]
-   },
-   {
-    "bpm": 150.32,
-    "category": "fx",
-    "filename": "vox_shout_01.wav",
-    "id": "smp818f",
-    "key": null,
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\fx\\vox_shout_01.wav",
-    "placements": 6,
-    "roles": [
-     "impact"
-    ],
-    "scored_for_genre": "gabber",
-    "selection_score": 2.75,
-    "tracks_using": [
-     "01",
-     "02",
-     "03",
-     "04"
-    ]
-   },
-   {
-    "bpm": 128.0,
-    "category": "chord",
-    "filename": "chord_loop_Amin_128bpm.wav",
-    "id": "smp33d2",
-    "key": "A:min",
-    "path": "C:\\CodeProjects\\demoprodz\\Music_Generator\\data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-    "placements": 24,
-    "roles": [
-     "melodic_loop"
-    ],
-    "scored_for_genre": "trance",
-    "selection_score": 3.11,
-    "tracks_using": [
-     "01",
-     "03"
-    ]
-   }
-  ],
+  "entries": [],
   "genres": [
    "gabber",
    "hard_house",
@@ -326,11 +267,6 @@
    "message": "bpm 155 outside [158, 182] (snapped to hard_house genre range)",
    "severity": "warning",
    "track": 3
-  },
-  {
-   "code": "palette_weak_propagation",
-   "message": "palette chord_loop_Amin_128bpm.wav reaches 2/4 tracks (< majority)",
-   "severity": "warning"
   }
  ],
  "version": 1

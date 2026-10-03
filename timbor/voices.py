@@ -31,8 +31,9 @@ def synth_voice(inst: str, midi: float, dur: float, vel: float,
         return dsp.pad_chord([f, f * 1.26, f * 1.5], dur, seed=seed)  # minor-ish stack
     if inst == "square_lead":
         n = int(dur * dsp.SR)
-        out = dsp.osc_square(f, n, 0.35)
-        out = dsp.lp(out, 4200)
+        lfo = 0.35 + 0.15 * np.sin(2.0 * np.pi * 3.5 * np.arange(n) / dsp.SR)
+        out = dsp.osc_square(f, n, pw=lfo)
+        out = dsp.lp(out, 4800)
         out *= dsp.adsr(n, 0.004, 0.08, 0.7, 0.06)
         return out
     if inst == "acid":
