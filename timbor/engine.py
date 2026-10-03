@@ -1012,6 +1012,8 @@ def finalize_mix(bus_arrays: dict, sample_bus, *, bass_inst: str, genre: str,
         leveled["samples"] = smp
     elif smp is not None:
         leveled["samples"] = smp
+    else:
+        leveled["samples"] = np.zeros(pos)
     return leveled
 
 

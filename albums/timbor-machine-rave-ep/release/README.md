@@ -7,10 +7,10 @@ BPM range: 142-170
 Key neighborhood: D minor (±12 BPM)
 
 Tracklist:
-01 Track 01 (gabber, 170 BPM, 63.1s)
-02 Track 02 (jungle, 167 BPM, 52.7s)
-03 Track 03 (trance, 142 BPM, 61.8s)
-04 Track 04 (hard_house, 155 BPM, 69.1s)
+01 Track 01 (gabber, 170 BPM, 62.1s)
+02 Track 02 (jungle, 167 BPM, 51.7s)
+03 Track 03 (trance, 142 BPM, 60.8s)
+04 Track 04 (hard_house, 155 BPM, 68.1s)
 
 Audio:
 Sample rate: 44100 Hz

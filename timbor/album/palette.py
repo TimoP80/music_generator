@@ -60,10 +60,12 @@ def same_path(a: str | None, b: str | None) -> bool:
     if not a or not b:
         return False
     import os as _os
-    if _os.path.normcase(_os.path.abspath(a)) == \
-            _os.path.normcase(_os.path.abspath(b)):
+    a_norm = a.replace("\\", "/")
+    b_norm = b.replace("\\", "/")
+    if _os.path.normcase(_os.path.abspath(a_norm)) == \
+            _os.path.normcase(_os.path.abspath(b_norm)):
         return True
-    return _os.path.basename(a) == _os.path.basename(b)
+    return _os.path.basename(a_norm) == _os.path.basename(b_norm)
 
 
 # ------------------------------------------------------------- pseudo-song

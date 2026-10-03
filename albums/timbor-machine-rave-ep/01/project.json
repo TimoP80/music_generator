@@ -4,11 +4,11 @@
  "generator": {
   "name": "TIMBOR",
   "version": "0.3.0",
-  "python": "3.14.6",
-  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.13",
+  "os": "Linux-6.8.0-x86_64-with-glibc2.39",
   "sample_rate": 44100,
   "seed": 307915412,
-  "generated_at": "2026-10-01T05:44:01",
+  "generated_at": "2026-10-02T23:03:24",
   "genre": "gabber",
   "mood": "dark",
   "era": "1990-1995",
@@ -1611,38 +1611,6 @@
    }
   },
   {
-   "id": 1334,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "groove",
-   "start_beat": 16.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.78,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5140000000000001,
-    "energy": 0.55,
-    "plan_intensity": 0.5
-   }
-  },
-  {
    "id": 123,
    "type": "bass",
    "bus": "bass",
@@ -2117,38 +2085,6 @@
     },
     "voice_seed": 1273304137,
     "dur_steps": 2.0
-   }
-  },
-  {
-   "id": 1335,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "groove",
-   "start_beat": 20.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.78,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5140000000000001,
-    "energy": 0.55,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -2629,38 +2565,6 @@
    }
   },
   {
-   "id": 1336,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "groove",
-   "start_beat": 24.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.78,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "second_half",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5140000000000001,
-    "energy": 0.55,
-    "plan_intensity": 0.5
-   }
-  },
-  {
    "id": 155,
    "type": "bass",
    "bus": "bass",
@@ -3135,38 +3039,6 @@
     },
     "voice_seed": 1475459618,
     "dur_steps": 2.0
-   }
-  },
-  {
-   "id": 1337,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "groove",
-   "start_beat": 28.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.78,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5140000000000001,
-    "energy": 0.55,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -3770,100 +3642,6 @@
     },
     "voice_seed": 1747422748,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1338,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "theme",
-   "start_beat": 32.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1339,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "theme",
-   "start_beat": 32.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1340,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "theme",
-   "start_beat": 32.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.88,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "first_half",
-    "loop_bars": 2.0,
-    "gain_linear": 0.57,
-    "energy": 0.75,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -4515,100 +4293,6 @@
    }
   },
   {
-   "id": 1341,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "theme",
-   "start_beat": 36.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1342,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "theme",
-   "start_beat": 36.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1343,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "theme",
-   "start_beat": 36.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.88,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.57,
-    "energy": 0.75,
-    "plan_intensity": 0.5
-   }
-  },
-  {
    "id": 252,
    "type": "bass",
    "bus": "bass",
@@ -5257,100 +4941,6 @@
    }
   },
   {
-   "id": 1344,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "theme",
-   "start_beat": 40.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1345,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "theme",
-   "start_beat": 40.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1346,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "theme",
-   "start_beat": 40.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.88,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "second_half",
-    "loop_bars": 2.0,
-    "gain_linear": 0.57,
-    "energy": 0.75,
-    "plan_intensity": 0.5
-   }
-  },
-  {
    "id": 268,
    "type": "bass",
    "bus": "bass",
@@ -5996,100 +5586,6 @@
     },
     "voice_seed": 2142559491,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1347,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "theme",
-   "start_beat": 44.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1348,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "theme",
-   "start_beat": 44.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.05,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6269999999999999,
-    "energy": 0.75,
-    "plan_intensity": 0.7
-   }
-  },
-  {
-   "id": 1349,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "theme",
-   "start_beat": 44.0,
-   "duration_beats": 4.0,
-   "gain_db": -4.88,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.57,
-    "energy": 0.75,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -6856,66 +6352,6 @@
    }
   },
   {
-   "id": 1350,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "dev",
-   "start_beat": 48.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
-   "id": 1351,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "dev",
-   "start_beat": 48.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
    "id": 384,
    "type": "bass",
    "bus": "bass",
@@ -7532,66 +6968,6 @@
     },
     "voice_seed": 43893687,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1352,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "dev",
-   "start_beat": 52.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
-   "id": 1353,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "dev",
-   "start_beat": 52.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
    }
   },
   {
@@ -8214,66 +7590,6 @@
    }
   },
   {
-   "id": 1354,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "dev",
-   "start_beat": 56.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
-   "id": 1355,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "dev",
-   "start_beat": 56.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
    "id": 416,
    "type": "bass",
    "bus": "bass",
@@ -8890,66 +8206,6 @@
     },
     "voice_seed": 390094528,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1356,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "dev",
-   "start_beat": 60.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
-   }
-  },
-  {
-   "id": 1357,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "dev",
-   "start_beat": 60.0,
-   "duration_beats": 4.0,
-   "gain_db": -3.25,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.6877000000000001,
-    "energy": 0.85,
-    "plan_intensity": 0.8
    }
   },
   {
@@ -9619,38 +8875,6 @@
    }
   },
   {
-   "id": 1358,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break",
-   "start_beat": 64.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.39,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5375,
-    "energy": 0.25,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 482,
    "type": "hat",
    "bus": "drums",
@@ -9899,36 +9123,6 @@
     },
     "voice_seed": 408140041,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1359,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break",
-   "start_beat": 68.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.39,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5375,
-    "energy": 0.25,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -10196,36 +9390,6 @@
     },
     "voice_seed": 1735570720,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1360,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break",
-   "start_beat": 72.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.39,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5375,
-    "energy": 0.25,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -10509,36 +9673,6 @@
     },
     "voice_seed": 117353018,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1361,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break",
-   "start_beat": 76.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.39,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5375,
-    "energy": 0.25,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -10882,64 +10016,6 @@
     },
     "voice_seed": 610892623,
     "dur_steps": 2
-   }
-  },
-  {
-   "id": 1362,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build",
-   "start_beat": 80.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.99,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "intro",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5016,
-    "energy": 0.6,
-    "plan_intensity": 0.4
-   }
-  },
-  {
-   "id": 1363,
-   "type": "riser",
-   "bus": "samples",
-   "role": "riser",
-   "section": "build",
-   "start_beat": 80.0,
-   "duration_beats": 5.6667,
-   "gain_db": -7.54,
-   "velocity": 1.0,
-   "sample_id": "smp_e37d3cd8",
-   "source_path": "data\\demo_library\\fx\\riser_01.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.4118,
-   "reverse": false,
-   "chop_ops": {},
-   "metadata": {
-    "kind": "oneshot",
-    "variant": "build",
-    "dropout": "",
-    "loop_bars": null,
-    "gain_linear": 0.42,
-    "energy": 0.6,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -11442,36 +10518,6 @@
    }
   },
   {
-   "id": 1364,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build",
-   "start_beat": 84.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.99,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "intro",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5016,
-    "energy": 0.6,
-    "plan_intensity": 0.4
-   }
-  },
-  {
    "id": 588,
    "type": "bass",
    "bus": "bass",
@@ -11968,36 +11014,6 @@
     },
     "voice_seed": 1238779526,
     "dur_steps": 2
-   }
-  },
-  {
-   "id": 1365,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build",
-   "start_beat": 88.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.99,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "intro",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5016,
-    "energy": 0.6,
-    "plan_intensity": 0.4
    }
   },
   {
@@ -12625,36 +11641,6 @@
     },
     "voice_seed": 2108411633,
     "dur_steps": 2
-   }
-  },
-  {
-   "id": 1366,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build",
-   "start_beat": 92.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.99,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "intro",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.5016,
-    "energy": 0.6,
-    "plan_intensity": 0.4
    }
   },
   {
@@ -13372,94 +12358,6 @@
    }
   },
   {
-   "id": 1367,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop",
-   "start_beat": 96.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1368,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop",
-   "start_beat": 96.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
-   }
-  },
-  {
-   "id": 1369,
-   "type": "impact",
-   "bus": "samples",
-   "role": "impact",
-   "section": "drop",
-   "start_beat": 96.0,
-   "duration_beats": 3.4,
-   "gain_db": -6.02,
-   "velocity": 1.0,
-   "sample_id": "smp_5861bc81",
-   "source_path": "data\\demo_library\\fx\\vox_shout_01.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {},
-   "metadata": {
-    "kind": "oneshot",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": null,
-    "gain_linear": 0.5,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 706,
    "type": "bass",
    "bus": "bass",
@@ -14105,66 +13003,6 @@
     },
     "voice_seed": 1808077096,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1370,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop",
-   "start_beat": 100.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1371,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop",
-   "start_beat": 100.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
    }
   },
   {
@@ -14816,66 +13654,6 @@
    }
   },
   {
-   "id": 1372,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop",
-   "start_beat": 104.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1373,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop",
-   "start_beat": 104.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
-   }
-  },
-  {
    "id": 738,
    "type": "bass",
    "bus": "bass",
@@ -15521,66 +14299,6 @@
     },
     "voice_seed": 1387648331,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1374,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop",
-   "start_beat": 108.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1375,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop",
-   "start_beat": 108.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
    }
   },
   {
@@ -16266,66 +14984,6 @@
    }
   },
   {
-   "id": 1376,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "variation",
-   "start_beat": 112.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.86,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7191,
-    "energy": 0.9,
-    "plan_intensity": 0.85
-   }
-  },
-  {
-   "id": 1377,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "variation",
-   "start_beat": 112.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.68,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7343999999999999,
-    "energy": 0.9,
-    "plan_intensity": 0.9
-   }
-  },
-  {
    "id": 851,
    "type": "bass",
    "bus": "bass",
@@ -16971,66 +15629,6 @@
     },
     "voice_seed": 1317274478,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1378,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "variation",
-   "start_beat": 116.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.86,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7191,
-    "energy": 0.9,
-    "plan_intensity": 0.85
-   }
-  },
-  {
-   "id": 1379,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "variation",
-   "start_beat": 116.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.68,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7343999999999999,
-    "energy": 0.9,
-    "plan_intensity": 0.9
    }
   },
   {
@@ -17682,66 +16280,6 @@
    }
   },
   {
-   "id": 1380,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "variation",
-   "start_beat": 120.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.86,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7191,
-    "energy": 0.9,
-    "plan_intensity": 0.85
-   }
-  },
-  {
-   "id": 1381,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "variation",
-   "start_beat": 120.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.68,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7343999999999999,
-    "energy": 0.9,
-    "plan_intensity": 0.9
-   }
-  },
-  {
    "id": 883,
    "type": "bass",
    "bus": "bass",
@@ -18390,66 +16928,6 @@
    }
   },
   {
-   "id": 1382,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "variation",
-   "start_beat": 124.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.86,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7191,
-    "energy": 0.9,
-    "plan_intensity": 0.85
-   }
-  },
-  {
-   "id": 1383,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "variation",
-   "start_beat": 124.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.68,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.7343999999999999,
-    "energy": 0.9,
-    "plan_intensity": 0.9
-   }
-  },
-  {
    "id": 899,
    "type": "bass",
    "bus": "bass",
@@ -19087,38 +17565,6 @@
    }
   },
   {
-   "id": 1384,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break2",
-   "start_beat": 128.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.11,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.555,
-    "energy": 0.3,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 995,
    "type": "bass",
    "bus": "bass",
@@ -19564,36 +18010,6 @@
    "metadata": {
     "extra": {},
     "dur_steps": 1
-   }
-  },
-  {
-   "id": 1385,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break2",
-   "start_beat": 132.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.11,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.555,
-    "energy": 0.3,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -20045,36 +18461,6 @@
    }
   },
   {
-   "id": 1386,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break2",
-   "start_beat": 136.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.11,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.555,
-    "energy": 0.3,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 1027,
    "type": "bass",
    "bus": "bass",
@@ -20520,36 +18906,6 @@
    "metadata": {
     "extra": {},
     "dur_steps": 1
-   }
-  },
-  {
-   "id": 1387,
-   "type": "texture",
-   "bus": "samples",
-   "role": "pad",
-   "section": "break2",
-   "start_beat": 140.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.11,
-   "velocity": 1.0,
-   "sample_id": "smp_b6346865",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "breakdown",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.555,
-    "energy": 0.3,
-    "plan_intensity": 1.0
    }
   },
   {
@@ -21120,64 +19476,6 @@
    }
   },
   {
-   "id": 1388,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build2",
-   "start_beat": 144.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.32,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.542,
-    "energy": 0.65,
-    "plan_intensity": 0.5
-   }
-  },
-  {
-   "id": 1389,
-   "type": "riser",
-   "bus": "samples",
-   "role": "riser",
-   "section": "build2",
-   "start_beat": 144.0,
-   "duration_beats": 5.6667,
-   "gain_db": -7.33,
-   "velocity": 1.0,
-   "sample_id": "smp_e37d3cd8",
-   "source_path": "data\\demo_library\\fx\\riser_01.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.4118,
-   "reverse": false,
-   "chop_ops": {},
-   "metadata": {
-    "kind": "oneshot",
-    "variant": "build",
-    "dropout": "",
-    "loop_bars": null,
-    "gain_linear": 0.43,
-    "energy": 0.65,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 1093,
    "type": "bass",
    "bus": "bass",
@@ -21677,36 +19975,6 @@
    }
   },
   {
-   "id": 1390,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build2",
-   "start_beat": 148.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.32,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "first_half",
-    "loop_bars": 2.0,
-    "gain_linear": 0.542,
-    "energy": 0.65,
-    "plan_intensity": 0.5
-   }
-  },
-  {
    "id": 1109,
    "type": "bass",
    "bus": "bass",
@@ -22203,36 +20471,6 @@
     },
     "voice_seed": 2028243045,
     "dur_steps": 2
-   }
-  },
-  {
-   "id": 1391,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build2",
-   "start_beat": 152.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.32,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.2,
-    "reorder": 0.2,
-    "reverse_fill": 0.3
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "first_half",
-    "loop_bars": 2.0,
-    "gain_linear": 0.542,
-    "energy": 0.65,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -22860,36 +21098,6 @@
     },
     "voice_seed": 548524360,
     "dur_steps": 2
-   }
-  },
-  {
-   "id": 1392,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "build2",
-   "start_beat": 156.0,
-   "duration_beats": 4.0,
-   "gain_db": -5.32,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.542,
-    "energy": 0.65,
-    "plan_intensity": 0.5
    }
   },
   {
@@ -23590,94 +21798,6 @@
    }
   },
   {
-   "id": 1393,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop2",
-   "start_beat": 160.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1394,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop2",
-   "start_beat": 160.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.12,
-    "reorder": 0.3,
-    "repeat": 0.08,
-    "mute": 0.0,
-    "stutter": 0.0
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
-   }
-  },
-  {
-   "id": 1395,
-   "type": "impact",
-   "bus": "samples",
-   "role": "impact",
-   "section": "drop2",
-   "start_beat": 160.0,
-   "duration_beats": 3.4,
-   "gain_db": -6.02,
-   "velocity": 1.0,
-   "sample_id": "smp_5861bc81",
-   "source_path": "data\\demo_library\\fx\\vox_shout_01.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {},
-   "metadata": {
-    "kind": "oneshot",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": null,
-    "gain_linear": 0.5,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
    "id": 1231,
    "type": "bass",
    "bus": "bass",
@@ -24323,66 +22443,6 @@
     },
     "voice_seed": 188999491,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1396,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop2",
-   "start_beat": 164.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1397,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop2",
-   "start_beat": 164.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
    }
   },
   {
@@ -25034,66 +23094,6 @@
    }
   },
   {
-   "id": 1398,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop2",
-   "start_beat": 168.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.1,
-    "reorder": 0.5,
-    "stutter": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1399,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop2",
-   "start_beat": 168.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
-   }
-  },
-  {
    "id": 1263,
    "type": "bass",
    "bus": "bass",
@@ -25739,66 +23739,6 @@
     },
     "voice_seed": 1467480108,
     "dur_steps": 16.0
-   }
-  },
-  {
-   "id": 1400,
-   "type": "breakbeat",
-   "bus": "samples",
-   "role": "main_break",
-   "section": "drop2",
-   "start_beat": 172.0,
-   "duration_beats": 4.0,
-   "gain_db": -1.94,
-   "velocity": 1.0,
-   "sample_id": "smp_76422120",
-   "source_path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "pitch_semitones": 0.0,
-   "stretch_ratio": 0.9763,
-   "reverse": true,
-   "chop_ops": {
-    "reverse": 0.35,
-    "reorder": 0.6,
-    "stutter": 0.15
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.8,
-    "energy": 1.0,
-    "plan_intensity": 1.0
-   }
-  },
-  {
-   "id": 1401,
-   "type": "sample_loop",
-   "bus": "samples",
-   "role": "melodic_loop",
-   "section": "drop2",
-   "start_beat": 172.0,
-   "duration_beats": 4.0,
-   "gain_db": -2.29,
-   "velocity": 1.0,
-   "sample_id": "smp_85b3d6ee",
-   "source_path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "pitch_semitones": 5.0,
-   "stretch_ratio": 1.0,
-   "reverse": false,
-   "chop_ops": {
-    "reverse": 0.0,
-    "reorder": 0.15,
-    "mute": 0.25
-   },
-   "metadata": {
-    "kind": "loop",
-    "variant": "drop",
-    "dropout": "",
-    "loop_bars": 2.0,
-    "gain_linear": 0.768,
-    "energy": 1.0,
-    "plan_intensity": 0.9
    }
   },
   {
@@ -26469,91 +24409,18 @@
    }
   }
  ],
- "samples": [
-  {
-   "id": "smp_76422120",
-   "path": "data\\demo_library\\breaks\\amen_break_00_174bpm.wav",
-   "filename": "amen_break_00_174bpm.wav",
-   "file_size": 243354,
-   "mtime": 1790799255.142734,
-   "hash": null,
-   "bpm": 174.12,
-   "bpm_confidence": 0.639,
-   "key": null,
-   "key_confidence": 0.0,
-   "category": "breakbeat"
-  },
-  {
-   "id": "smp_85b3d6ee",
-   "path": "data\\demo_library\\tonal\\chord_loop_Amin_128bpm.wav",
-   "filename": "chord_loop_Amin_128bpm.wav",
-   "file_size": 330794,
-   "mtime": 1790799255.174618,
-   "hash": null,
-   "bpm": 128.0,
-   "bpm_confidence": 0.45,
-   "key": "A:min",
-   "key_confidence": 0.784,
-   "category": "chord"
-  },
-  {
-   "id": "smp_b6346865",
-   "path": "data\\demo_library\\tonal\\chord_loop_Dmin_128bpm.wav",
-   "filename": "chord_loop_Dmin_128bpm.wav",
-   "file_size": 330794,
-   "mtime": 1790799255.202581,
-   "hash": null,
-   "bpm": 151.9,
-   "bpm_confidence": 0.503,
-   "key": "D:min",
-   "key_confidence": 1.0,
-   "category": "chord"
-  },
-  {
-   "id": "smp_e37d3cd8",
-   "path": "data\\demo_library\\fx\\riser_01.wav",
-   "filename": "riser_01.wav",
-   "file_size": 176444,
-   "mtime": 1790799255.2295725,
-   "hash": null,
-   "bpm": 95.7,
-   "bpm_confidence": 0.249,
-   "key": null,
-   "key_confidence": 0.0,
-   "category": "fx"
-  },
-  {
-   "id": "smp_5861bc81",
-   "path": "data\\demo_library\\fx\\vox_shout_01.wav",
-   "filename": "vox_shout_01.wav",
-   "file_size": 105884,
-   "mtime": 1790799255.2502623,
-   "hash": null,
-   "bpm": 150.32,
-   "bpm_confidence": 0.565,
-   "key": null,
-   "key_confidence": 0.0,
-   "category": "fx"
-  }
- ],
+ "samples": [],
  "stems": [
-  "audio\\drums.wav",
-  "audio\\bass.wav",
-  "audio\\mel.wav",
-  "audio\\fx.wav",
-  "audio\\samples.wav",
-  "audio\\master.wav"
+  "audio/drums.wav",
+  "audio/bass.wav",
+  "audio/mel.wav",
+  "audio/fx.wav",
+  "audio/samples.wav",
+  "audio/master.wav"
  ],
  "audio_dir": "audio",
  "qc": {
   "notes": [
-   "sample amen_break_00_174bpm.wav: near-clipping source (0.995) -> gain-staged",
-   "sample riser_01.wav: near-clipping source (1.000) -> gain-staged",
-   "sample amen_break_00_174bpm.wav: bpm 174 vs song 170 -> time-stretched 2% (conf 0.64)",
-   "sample chord_loop_Amin_128bpm.wav: bpm 128 vs song 170 -> stretch beyond +/-10% range, bar-aligned instead (conf 0.45)",
-   "sample vox_shout_01.wav: bpm 150 vs song 170 -> stretch beyond +/-10% range, bar-aligned instead (conf 0.56)",
-   "sample chord_loop_Dmin_128bpm.wav: bpm 152 vs song 170 -> stretch beyond +/-10% range, bar-aligned instead (conf 0.50)",
-   "sample chord_loop_Amin_128bpm.wav: key A:min -> song D natural_minor -> transposed +5 st (conf 0.78)",
    "stem qc: stem fx: clipping (peak 1.000)"
   ]
  },
