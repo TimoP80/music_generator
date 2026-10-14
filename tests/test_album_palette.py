@@ -20,14 +20,18 @@ _DB = None
 def _index():
     global _DB
     from timbor.samples.cache import SampleIndex
-    if _DB is None:
-        from timbor.samples.index import index_library
-        ws = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        lib = os.path.join(TMP, "lib")
-        shutil.copytree(os.path.join(ws, "data", "demo_library"), lib)
-        _DB = os.path.join(TMP, "samples.db")
+    from timbor.samples.index import index_library
+    from tests.test_samples import build_fixture_library
+    lib = os.path.join(TMP, "lib")
+    _DB = os.path.join(TMP, "samples.db")
+    if not os.path.exists(lib):
+        build_fixture_library(lib)
+    idx = SampleIndex(_DB)
+    if idx.analyzed_count() == 0:
+        idx.close()
         index_library(lib, db_path=_DB, verbose=False)
-    return SampleIndex(_DB)
+        idx = SampleIndex(_DB)
+    return idx
 
 
 def _cfg(mode="balanced", **kw):

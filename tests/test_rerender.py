@@ -27,6 +27,13 @@ FAILED = []
 
 # ---------------------------------------------------------------- helpers
 
+def _get_tmp():
+    global TMP
+    if TMP is None:
+        TMP = tempfile.mkdtemp(prefix="timbor_rerender_")
+    return TMP
+
+
 def _make_project(tag: str):
     """Render a small deterministic project; return (project_dict, root,
     live_buses, live_master_mono)."""
@@ -34,8 +41,9 @@ def _make_project(tag: str):
     lib_src = os.path.join(ws_root, "data", "demo_library")
     from timbor.samples.cache import SampleIndex
     from timbor.samples.index import index_library
-    lib = os.path.join(TMP, f"lib_{tag}")
-    db = os.path.join(TMP, f"samples_{tag}.db")
+    tmp_dir = _get_tmp()
+    lib = os.path.join(tmp_dir, f"lib_{tag}")
+    db = os.path.join(tmp_dir, f"samples_{tag}.db")
     if not os.path.isdir(lib):
         shutil.copytree(lib_src, lib)
         index_library(lib, db_path=db, verbose=False)
@@ -47,7 +55,7 @@ def _make_project(tag: str):
         song, buses, qc = render_track(plan, sample_index=idx)
         l, r = stereoize(buses)
         l, r = master(l, r)
-        root = os.path.join(TMP, f"proj_{tag}")
+        root = os.path.join(tmp_dir, f"proj_{tag}")
         pj = write_project_directory(os.path.join(root, "audio", "master.wav"),
                                      song, qc, buses, l, r)
         return load_project(pj), root, buses, (l + r) * 0.5

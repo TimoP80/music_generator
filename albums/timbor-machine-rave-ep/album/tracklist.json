@@ -3,7 +3,7 @@
  "tracks": [
   {
    "bpm": 170.0,
-   "duration_seconds": 63.118,
+   "duration_seconds": 62.118,
    "gap_before": 0.0,
    "genre": "gabber",
    "position": 1,
@@ -12,29 +12,29 @@
   },
   {
    "bpm": 167.0,
-   "duration_seconds": 52.737,
-   "gap_before": 2.0,
+   "duration_seconds": 51.736,
+   "gap_before": 0.0,
    "genre": "jungle",
    "position": 2,
-   "start_seconds": 65.1176,
+   "start_seconds": 59.1176,
    "title": "Track 02"
   },
   {
    "bpm": 142.0,
-   "duration_seconds": 61.845,
-   "gap_before": 2.0,
+   "duration_seconds": 60.845,
+   "gap_before": 0.0,
    "genre": "trance",
    "position": 3,
-   "start_seconds": 119.8541,
+   "start_seconds": 107.8539,
    "title": "Track 03"
   },
   {
    "bpm": 155.0,
-   "duration_seconds": 69.129,
-   "gap_before": 2.0,
+   "duration_seconds": 68.129,
+   "gap_before": 0.0,
    "genre": "hard_house",
    "position": 4,
-   "start_seconds": 183.6992,
+   "start_seconds": 165.6988,
    "title": "Track 04"
   }
  ]

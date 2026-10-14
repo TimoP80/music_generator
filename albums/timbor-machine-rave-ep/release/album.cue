@@ -8,12 +8,12 @@ FILE "album.wav" WAVE
   TRACK 02 AUDIO
     TITLE "Track 02"
     PERFORMER "jungle / 167 BPM"
-    INDEX 01 01:00:09
+    INDEX 01 00:59:09
   TRACK 03 AUDIO
     TITLE "Track 03"
     PERFORMER "trance / 142 BPM"
-    INDEX 01 01:49:64
+    INDEX 01 01:47:64
   TRACK 04 AUDIO
     TITLE "Track 04"
     PERFORMER "hard_house / 155 BPM"
-    INDEX 01 02:48:52
+    INDEX 01 02:45:52
